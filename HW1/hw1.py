@@ -6,36 +6,36 @@ import itertools
 
 # x and y coordinates with top left corner as origin
 goal_grid = {
-    1: (0, 0), 2: (1, 0), 3: (2, 0),
-    8: (0, 1), 0: (1, 1), 4: (2, 1),
-    7: (0, 2), 6: (1, 2), 5: (2, 2)
+    1: (0, 0), 2: (0, 1), 3: (0, 2),
+    8: (1, 0), 0: (1, 1), 4: (1, 2),
+    7: (2, 0), 6: (2, 1), 5: (2, 2)
 }
 
 # Out of place 4
 easy_grid = {
-    1: (0, 0), 3: (1, 0), 4: (2, 0),
-    8: (0, 1), 6: (1, 1), 2: (2, 1),
-    7: (0, 2), 0: (1, 2), 5: (2, 2)
+    1: (0, 0), 3: (0, 1), 4: (0, 2),
+    8: (1, 0), 6: (1, 1), 2: (1, 2),
+    7: (2, 0), 0: (2, 1), 5: (2, 2)
 }
 # Out of place 5
 medium_grid = {
-    2: (0, 0), 8: (1, 0), 1: (2, 0),
-    0: (0, 1), 4: (1, 1), 3: (2, 1),
-    7: (0, 2), 6: (1, 2), 5: (2, 2)
+    2: (0, 0), 8: (0, 1), 1: (0, 2),
+    0: (1, 0), 4: (1, 1), 3: (1, 2),
+    7: (2, 0), 6: (2, 1), 5: (2, 2)
 }
 
 # Out of place 7
 hard_grid = {
-    2: (0, 0), 8: (1, 0), 1: (2, 0),
-    4: (0, 1), 6: (1, 1), 3: (2, 1),
-    0: (0, 2), 7: (1, 2), 5: (2, 2)
+    2: (0, 0), 8: (0, 1), 1: (0, 2),
+    4: (1, 0), 6: (1, 1), 3: (1, 2),
+    0: (2, 0), 7: (2, 1), 5: (2, 2)
 }
 
 # out of place
 worst_grid = {
-    5: (0, 0), 6: (1, 0), 7: (2, 0),
-    4: (0, 1), 0: (1, 1), 8: (2, 1),
-    3: (0, 2), 2: (1, 2), 1: (2, 2)
+    5: (0, 0), 6: (0, 1), 7: (0, 2),
+    4: (1, 0), 0: (1, 1), 8: (1, 2),
+    3: (2, 0), 2: (2, 1), 1: (2, 2)
 }
 
 # use easy and goal
@@ -54,14 +54,23 @@ def state:
 
 
 class Node:
-    def __init__(self, parent_node, use_manhattan, curr_grid):
-        self.parent_node = parent_node
-        self.g = parent_node.g + 1
-        self.curr_grid = curr_grid
-        self.h = self.calc_manhattan_heuristic(
-            self.curr_grid) if use_manhattan else self.calc_misplaced_tiles_heuristic(self.curr_grid)
-        self.f = self.g + self.h
+    def __init__(self, curr_grid, use_manhattan, parent_node=None):
+        if parent_node:
+            self.parent_node = parent_node
+            self.g = parent_node.g + 1
+            self.h = self.calc_manhattan_heuristic(self.curr_grid) if use_manhattan else self.calc_misplaced_tiles_heuristic(self.curr_grid)
+            self.f = self.g + self.h
+            self.curr_grid = curr_grid
+        else:
+            self.g = 0
+            self.h = 0
+            self.f = 0
+            self.curr_grid = curr_grid
 
+
+
+    def get_f(self):
+        return self.f
     def calc_misplaced_tiles_heuristic(self, curr_grid):
         # for coordinates in easy_grid.values():
         #     print(coordinates)
@@ -89,30 +98,52 @@ class Node:
 
         return total_manhattan_distance
 
-#
-# def a_star_search(start_state, goal_state, heuristic='not_manhattan'):
-#     open_list = PriorityQueue()
-#
-#     open_list.put()
-#
-#
-#     heuristic = str(heuristic).lower()
-#
-#     if heuristic == 'manhattan':
-#         pass
-#     else:
-#         pass
-#
-#     #dicts for the nodes todo: do I really need this?
-#     f = {}
-#     g = {}
-#     h = {}
-#
-#     while open_list:
-#         curr_state = open_list
-#
-#     # while open_list :
-#     #     curr_
+    #String representation of Node for printing purposes
+    def __repr__(self):
+        arr = np.empty([3,3],np.int)
+        for num in self.curr_grid:
+            row,col = self.curr_grid[num]
+            # print(num)
+            arr[row,col] = num
+            # print(arr[row,col])
+        # print(arr)
+        return '\n'.join(['\t'.join([str(cell) for cell in row]) for row in arr])
+
+    # def __repr__(self):
+    #     arr = []
+    #     for num in self.curr_grid:
+    #         row, col = self.curr_grid[num]
+    #         arr[row, col] = num
+    #
+    #     arr.astype(int)
+    #     print(arr)
+    #     return '\n'.join(['\t'.join([str(cell) for cell in row]) for row in arr])
+
+
+def a_star_search(start_grid, use_manhattan=False):
+    #Initialize the open list
+    open_list = PriorityQueue()
+    start_node = Node(start_grid,use_manhattan)
+    open_list.put((start_node.get_f(),start_node))
+    #Initialize the closed list
+    closed_list = []
+
+    while open_list:
+        '''
+        Find the node with the least f. Call it "q" Pop it off the list. I am using a priority queue so this is done
+        automatically
+        '''
+        q = open_list.get()
+        print(q[1])
+        '''
+        Generate q's successors and set their parents to q
+        '''
+
+a_star_search(easy_grid)
+
+
+    # while open_list :
+    #     curr_
 #
 #
 #
