@@ -49,7 +49,7 @@ def calc_out_of_place_tiles(start_grid):
         print("start:" + str(k1), str(v1))
         print("goal:" + str(k2), str(v2))
 
-    print("Out of place:" + str(num_out_of_place_tiles))
+    return num_out_of_place_tiles
 
 
 # calc_out_of_place_tiles(worst_grid)
@@ -58,14 +58,16 @@ def calc_out_of_place_tiles(start_grid):
 def calc_sum_manhattan_distance(start_grid):
     # for coordinates in easy_grid.values():
     #     print(coordinates)
-    distance = 0
-    for (k1, v1), (k2,v2) in zip(start_grid.items(), goal_grid.items()):
-        #We don't care if the blank is out of place
-        if k1 != 0:
-            distance += (abs(v1[0] - v2[0]) + abs(v1[1] - v2[1]))
+    total_manhattan_distance = 0
+    for num in start_grid:
+        #     #We don't care if the blank is out of place
+        if num != 0:
+            total_manhattan_distance += (abs(start_grid[num][0] - goal_grid[num][0]) + (abs(start_grid[num][1] - goal_grid[num][1])))
+
+    return total_manhattan_distance
 
 
-    print("sum of manhattan distance" + str(distance))
+calc_sum_manhattan_distance(easy_grid)
 '''
 def state:
     matrix
