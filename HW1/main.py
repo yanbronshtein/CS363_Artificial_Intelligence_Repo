@@ -1,159 +1,150 @@
-from copy import deepcopy
-from colorama import Fore, Back, Style
 
-DIRECTIONS = {"U": [-1, 0], "D": [1, 0], "L": [0, -1], "R": [0, 1]}
-END = [[1, 2, 3], [4, 5, 6], [7, 8, 0]]
+import numpy as np
 
-# unicode
-left_down_angle = '\u2514'
-right_down_angle = '\u2518'
-right_up_angle = '\u2510'
-left_up_angle = '\u250C'
+goal_grid = {
+    1: (0, 0), 2: (0, 1), 3: (0, 2),
+    8: (1, 0), 0: (1, 1), 4: (1, 2),
+    7: (2, 0), 6: (2, 1), 5: (2, 2)
+}
 
-middle_junction = '\u253C'
-top_junction = '\u252C'
-bottom_junction = '\u2534'
-right_junction = '\u2524'
-left_junction = '\u251C'
+# Out of place 4
+easy_grid = {
+    1: (0, 0), 3: (0, 1), 4: (0, 2),
+    8: (1, 0), 6: (1, 1), 2: (1, 2),
+    7: (2, 0), 0: (2, 1), 5: (2, 2)
+}
+# Out of place 5
+medium_grid = {
+    2: (0, 0), 8: (0, 1), 1: (0, 2),
+    0: (1, 0), 4: (1, 1), 3: (1, 2),
+    7: (2, 0), 6: (2, 1), 5: (2, 2)
+}
 
-bar = Style.BRIGHT + Fore.CYAN + '\u2502' + Fore.RESET + Style.RESET_ALL
-dash = '\u2500'
-
-first_line = Style.BRIGHT + Fore.CYAN + left_up_angle + dash + dash + dash + top_junction + dash + dash + dash + top_junction + dash + dash + dash + right_up_angle + Fore.RESET + Style.RESET_ALL
-middle_line = Style.BRIGHT + Fore.CYAN + left_junction + dash + dash + dash + middle_junction + dash + dash + dash + middle_junction + dash + dash + dash + right_junction + Fore.RESET + Style.RESET_ALL
-last_line = Style.BRIGHT + Fore.CYAN + left_down_angle + dash + dash + dash + bottom_junction + dash + dash + dash + bottom_junction + dash + dash + dash + right_down_angle + Fore.RESET + Style.RESET_ALL
-
-
-def print_puzzle(array):
-    print(first_line)
-    for a in range(len(array)):
-        for i in array[a]:
-            if i == 0:
-                print(bar, Back.RED + ' ' + Back.RESET, end=' ')
-            else:
-                print(bar, i, end=' ')
-        print(bar)
-        if a == 2:
-            print(last_line)
-        else:
-            print(middle_line)
+# Out of place 7
+hard_grid = {
+    2: (0, 0), 8: (0, 1), 1: (0, 2),
+    4: (1, 0), 6: (1, 1), 3: (1, 2),
+    0: (2, 0), 7: (2, 1), 5: (2, 2)
+}
 
 
 class Node:
-    def __init__(self, current_node, previous_node, g, h, dir):
-        self.current_node = current_node
-        self.previous_node = previous_node
-        self.g = g
-        self.h = h
-        self.dir = dir
+    def __init__(self, curr_grid, use_manhattan, parent_node=None):
+        if parent_node is not None:
+            self.parent_node = parent_node
+            self.g = parent_node.g + 1
+            self.h = self.calc_manhattan_heuristic(
+                self.curr_grid) if use_manhattan else self.calc_misplaced_tiles_heuristic(self.curr_grid)
+            self.f = self.g + self.h
+            self.curr_grid = curr_grid
+        else:
+            self.g = 0
+            self.h = 0
+            self.f = 0
+            self.curr_grid = curr_grid
 
-    def f(self):
-        return self.g + self.h
+    @staticmethod
+    def calc_misplaced_tiles_heuristic(curr_grid):
+        # for coordinates in easy_grid.values():
+        #     print(coordinates)
+        misplaced_tiles = 0
+        for (k1, v1), (k2, v2) in zip(curr_grid.items(), goal_grid.items()):
+            # We don't care if the blank is out of place
+            if k1 != k2 and k1 != 0:
+                misplaced_tiles += 1
+            print("start:" + str(k1), str(v1))
+            print("goal:" + str(k2), str(v2))
 
+        return misplaced_tiles
 
-def get_pos(current_state, element):
-    for row in range(len(current_state)):
-        if element in current_state[row]:
-            return (row, current_state[row].index(element))
+    # calc_out_of_place_tiles(worst_grid)
 
+    @staticmethod
+    def calc_manhattan_heuristic(curr_grid):
+        # for coordinates in easy_grid.values():
+        #     print(coordinates)
+        total_manhattan_distance = 0
+        for num in curr_grid:
+            #     #We don't care if the blank is out of place
+            if num != 0:
+                total_manhattan_distance += (
+                        abs(curr_grid[num][0] - goal_grid[num][0]) + (abs(curr_grid[num][1] - goal_grid[num][1])))
 
-def euclidianCost(current_state):
-    cost = 0
-    for row in range(len(current_state)):
-        for col in range(len(current_state[0])):
-            pos = get_pos(END, current_state[row][col])
-            cost += abs(row - pos[0]) + abs(col - pos[1])
-    return cost
+        return total_manhattan_distance
 
-
-def getAdjNode(node):
-    listNode = []
-    emptyPos = get_pos(node.current_node, 0)
-
-    for dir in DIRECTIONS.keys():
-        newPos = (emptyPos[0] + DIRECTIONS[dir][0], emptyPos[1] + DIRECTIONS[dir][1])
-        if 0 <= newPos[0] < len(node.current_node) and 0 <= newPos[1] < len(node.current_node[0]):
-            newState = deepcopy(node.current_node)
-            newState[emptyPos[0]][emptyPos[1]] = node.current_node[newPos[0]][newPos[1]]
-            newState[newPos[0]][newPos[1]] = 0
-            # listNode += [Node(newState, node.current_node, node.g + 1, euclidianCost(newState), dir)]
-            listNode.append(Node(newState, node.current_node, node.g + 1, euclidianCost(newState), dir))
-
-    return listNode
-
-
-def getBestNode(openSet):
-    firstIter = True
-
-    for node in openSet.values():
-        if firstIter or node.f() < bestF:
-            firstIter = False
-            bestNode = node
-            bestF = bestNode.f()
-    return bestNode
+    def __repr__(self):
+        arr = np.empty([3, 3], np.int)
+        for num in self.curr_grid:
+            row, col = self.curr_grid[num]
+            arr[row, col] = num
+        return '\n'.join(['\t'.join([str(cell) for cell in row]) for row in arr])
 
 
-def buildPath(closedSet):
-    node = closedSet[str(END)]
-    branch = list()
+# class for Priority queue
+class PriorityQueue:
 
-    while node.dir:
-        branch.append({
-            'dir': node.dir,
-            'node': node.current_node
-        })
-        node = closedSet[str(node.previous_node)]
-    branch.append({
-        'dir': '',
-        'node': node.current_node
-    })
-    branch.reverse()
+    def __init__(self):
+        self.queue = list()
+        # if you want you can set a maximum size for the queue
 
-    return branch
+    def insert(self, node):
+        # if queue is empty
+        if self.size() == 0:
+            # add the new node
+            self.queue.append(node)
+        else:
+            # traverse the queue to find the right place for new node
+            for x in range(self.size()):
+                # if the priority of new node is greater
+                if node.f >= self.queue[x].f:
+                    # if we have traversed the complete queue
+                    if x == (self.size() - 1):
+                        # add new node at the end
+                        self.queue.insert(x + 1, node)
+                    else:
+                        continue
+                else:
+                    self.queue.insert(x, node)
+                    return True
+
+    def delete(self):
+        # remove the first node from the queue
+        return self.queue.pop(0)
+
+    # def show(self):
+    #     for x in self.queue:
+    #         print (str(x.info) + " - " + str(x.f))
+
+    def size(self):
+        return len(self.queue)
 
 
-def main(puzzle):
-    open_set = {str(puzzle): Node(puzzle, puzzle, 0, euclidianCost(puzzle), "")}
-    closed_set = {}
+pQueue = PriorityQueue()
+# node1 = Node("C", 3)
+# node2 = Node("B", 2)
+# node3 = Node("A", 1)
+# node4 = Node("Z", 26)
+# node5 = Node("Y", 25)
+# node6 = Node("L", 12)
 
-    while True:
-        test_node = getBestNode(open_set)
-        closed_set[str(test_node.current_node)] = test_node
-
-        if test_node.current_node == END:
-            return buildPath(closed_set)
-
-        adj_node = getAdjNode(test_node)
-        for node in adj_node:
-            if str(node.current_node) in closed_set.keys() or str(node.current_node) in open_set.keys() and open_set[
-                str(node.current_node)].f() < node.f():
-                continue
-            open_set[str(node.current_node)] = node
-
-        del open_set[str(test_node.current_node)]
+# node1 = Node()
+# node2 = Node("B", 2)
+# node3 = Node("A", 1)
+# node4 = Node("Z", 26)
+# node5 = Node("Y", 25)
+# node6 = Node("L", 12)
 
 
-if __name__ == '__main__':
-    br = main([[6, 2, 8],
-               [4, 7, 1],
-               [0, 3, 5]])
+node1 = Node(easy_grid, True)
+node2 = Node(medium_grid, True)
+node3 = Node(hard_grid, True)
+pQueue.insert(node1)
+pQueue.insert(node2)
+pQueue.insert(node3)
 
-    print('total steps : ', len(br) - 1)
-    print()
-    print(dash + dash + right_junction, "INPUT", left_junction + dash + dash)
-    for b in br:
-        if b['dir'] != '':
-            letter = ''
-            if b['dir'] == 'U':
-                letter = 'UP'
-            elif b['dir'] == 'R':
-                letter = "RIGHT"
-            elif b['dir'] == 'L':
-                letter = 'LEFT'
-            elif b['dir'] == 'D':
-                letter = 'DOWN'
-            print(dash + dash + right_junction, letter, left_junction + dash + dash)
-        print_puzzle(b['node'])
-        print()
+print(pQueue.delete())
 
-    print(dash + dash + right_junction, 'ABOVE IS THE OUTPUT', left_junction + dash + dash)
+print()
+
+print(pQueue.delete())
+# pQueue.show()

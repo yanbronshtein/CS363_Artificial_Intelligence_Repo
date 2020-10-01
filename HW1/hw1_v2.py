@@ -1,6 +1,10 @@
-
 import numpy as np
+import pandas as pd
+import sys
+from queue import PriorityQueue
+import itertools
 
+# x and y coordinates with top left corner as origin
 goal_grid = {
     1: (0, 0), 2: (0, 1), 3: (0, 2),
     8: (1, 0), 0: (1, 1), 4: (1, 2),
@@ -13,6 +17,7 @@ easy_grid = {
     8: (1, 0), 6: (1, 1), 2: (1, 2),
     7: (2, 0), 0: (2, 1), 5: (2, 2)
 }
+
 # Out of place 5
 medium_grid = {
     2: (0, 0), 8: (0, 1), 1: (0, 2),
@@ -27,24 +32,51 @@ hard_grid = {
     0: (2, 0), 7: (2, 1), 5: (2, 2)
 }
 
+# out of place
+worst_grid = {
+    5: (0, 0), 6: (0, 1), 7: (0, 2),
+    4: (1, 0), 0: (1, 1), 8: (1, 2),
+    3: (2, 0), 2: (2, 1), 1: (2, 2)
+}
+
+# use easy and goal
+
+
+'''
+def state:
+    matrix
+    parent node
+    g(n)
+    h_manhattan
+    h_regular
+
+
+'''
+
 
 class Node:
-    def __init__(self, curr_grid, use_manhattan, parent_node=None):
-        if parent_node is not None:
+    def __init__(self, curr_grid: dict, use_manhattan: bool, parent_node=None):
+        if parent_node:
             self.parent_node = parent_node
             self.g = parent_node.g + 1
             self.h = self.calc_manhattan_heuristic(
                 self.curr_grid) if use_manhattan else self.calc_misplaced_tiles_heuristic(self.curr_grid)
             self.f = self.g + self.h
-            self.curr_grid = curr_grid
+            self.curr_grid = dict(curr_grid)
         else:
             self.g = 0
             self.h = 0
             self.f = 0
-            self.curr_grid = curr_grid
+            self.curr_grid = dict(curr_grid)
+        print("bitch")
 
-    @staticmethod
-    def calc_misplaced_tiles_heuristic(curr_grid):
+    def get_f(self):
+        return self.f
+
+    def get_curr_grid(self) -> dict:
+        return self.curr_grid
+
+    def calc_misplaced_tiles_heuristic(self, curr_grid):
         # for coordinates in easy_grid.values():
         #     print(coordinates)
         misplaced_tiles = 0
@@ -59,8 +91,7 @@ class Node:
 
     # calc_out_of_place_tiles(worst_grid)
 
-    @staticmethod
-    def calc_manhattan_heuristic(curr_grid):
+    def calc_manhattan_heuristic(self, curr_grid):
         # for coordinates in easy_grid.values():
         #     print(coordinates)
         total_manhattan_distance = 0
@@ -72,90 +103,54 @@ class Node:
 
         return total_manhattan_distance
 
-    def __repr__(self):
+    def generate_successors(self):
+        blank_location = self.g
+        print("Hoe")
+        print(type(blank_location))
+        if blank_location == (2, 1):
+            print("Uhuh this my shit")
+
+    # String representation of Node for printing purposes
+    def __str__(self):
         arr = np.empty([3, 3], np.int)
         for num in self.curr_grid:
             row, col = self.curr_grid[num]
+
+            # print(num)
             arr[row, col] = num
-        return '\n'.join(['\t'.join([str(cell) for cell in row]) for row in arr])
-
-
-# class for Priority queue
-class PriorityQueue:
-
-    def __init__(self):
-        self.queue = list()
-        # if you want you can set a maximum size for the queue
-
-    def insert(self, node):
-        # if queue is empty
-        if self.size() == 0:
-            # add the new node
-            self.queue.append(node)
-        else:
-            # traverse the queue to find the right place for new node
-            for x in range(self.size()):
-                # if the priority of new node is greater
-                if node.f >= self.queue[x].f:
-                    # if we have traversed the complete queue
-                    if x == (self.size() - 1):
-                        # add new node at the end
-                        self.queue.insert(x + 1, node)
-                    else:
-                        continue
-                else:
-                    self.queue.insert(x, node)
-                    return True
-
-    def delete(self):
-        # remove the first node from the queue
-        return self.queue.pop(0)
-
-    # def show(self):
-    #     for x in self.queue:
-    #         print (str(x.info) + " - " + str(x.f))
-
-    def size(self):
-        return len(self.queue)
+            # print(arr[row,col])
+        # print(arr)
+        var = '\n'.join(['\t'.join([str(cell) for cell in row]) for row in arr])
+        return var
 
 
 def a_star_search(start_grid, use_manhattan=False):
-    #Initialize the open list
+    # Initialize the open list
     open_list = PriorityQueue()
-    node1 = Node(start_grid,use_manhattan)
-    node2 = Node(start_grid,use_manhattan)
-    node3 = Node(start_grid,use_manhattan)
-
-
-
-    #Initialize the closed list
+    start_node = Node(start_grid, use_manhattan)
+    open_list.put((start_node.get_f(), start_node))
+    # Initialize the closed list
     closed_list = []
 
-    while open_list:
-        '''
-        Find the node with the least f. Call it "q" Pop it off the list. I am using a priority queue so this is done
-        automatically
-        '''
-        q = open_list.get()
-        print(q[1])
-        '''
-        Generate q's successors and set their parents to q
-        '''
+    # while open_list:
+    #     '''
+    #     Find the node with the least f. Call it "q" Pop it off the list. I am using a priority queue so this is done
+    #     automatically
+    #     '''
+    #     q = open_list.get()
+    #     print(q[1])
+    #     '''
+    #     Generate q's successors and set their parents to q
+    #     '''
+
+    q = open_list.get()
+
+    curr_node = Node(q[1], use_manhattan)
+    curr_node.generate_successors()
 
 
 a_star_search(easy_grid)
 
-
-    # while open_list :
-    #     curr_
-#
-#
-#
-# def print_state(state):
-#     print('\n'.join(['\t'.join([str(cell) for cell in row]) for row in state]))
-#
-#
-#
 # def main():
 #     start_state_str = input("Please enter the start state as a comma separated vector excluding '<' and '>'. "
 #                             "For blank type b:\n"
