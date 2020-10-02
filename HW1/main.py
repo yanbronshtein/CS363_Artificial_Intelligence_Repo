@@ -1,150 +1,191 @@
+from Node import Node
+from PriorityQueue import PriorityQueue
+from typing import List
 
-import numpy as np
-
+blank = 0
 goal_grid = {
     1: (0, 0), 2: (0, 1), 3: (0, 2),
-    8: (1, 0), 0: (1, 1), 4: (1, 2),
+    8: (1, 0), blank: (1, 1), 4: (1, 2),
     7: (2, 0), 6: (2, 1), 5: (2, 2)
 }
-
 # Out of place 4
 easy_grid = {
     1: (0, 0), 3: (0, 1), 4: (0, 2),
     8: (1, 0), 6: (1, 1), 2: (1, 2),
-    7: (2, 0), 0: (2, 1), 5: (2, 2)
+    7: (2, 0), blank: (2, 1), 5: (2, 2)
 }
 # Out of place 5
 medium_grid = {
     2: (0, 0), 8: (0, 1), 1: (0, 2),
-    0: (1, 0), 4: (1, 1), 3: (1, 2),
+    blank: (1, 0), 4: (1, 1), 3: (1, 2),
     7: (2, 0), 6: (2, 1), 5: (2, 2)
 }
-
 # Out of place 7
 hard_grid = {
     2: (0, 0), 8: (0, 1), 1: (0, 2),
     4: (1, 0), 6: (1, 1), 3: (1, 2),
-    0: (2, 0), 7: (2, 1), 5: (2, 2)
+    blank: (2, 0), 7: (2, 1), 5: (2, 2)
+}
+
+# out of place
+worst_grid = {
+    5: (0, 0), 6: (0, 1), 7: (0, 2),
+    4: (1, 0), blank: (1, 1), 8: (1, 2),
+    3: (2, 0), 2: (2, 1), 1: (2, 2)
 }
 
 
-class Node:
-    def __init__(self, curr_grid, use_manhattan, parent_node=None):
-        if parent_node is not None:
-            self.parent_node = parent_node
-            self.g = parent_node.g + 1
-            self.h = self.calc_manhattan_heuristic(
-                self.curr_grid) if use_manhattan else self.calc_misplaced_tiles_heuristic(self.curr_grid)
-            self.f = self.g + self.h
-            self.curr_grid = curr_grid
+def find_matching_node(node: Node, node_list: List[Node]) -> Node:
+    """
+    This function attempts to find the first node with a matching grid. In anticipation of duplicates,
+    this function breaks after the first match, ignoring all others.
+    :param node_list: list of nodes
+    :type node: Node
+    :return match or None
+    """
+    match = None
+    for item in node_list:
+        if node.curr_grid == item.curr_grid:
+            match = item
+            break
+    return match
+
+
+# find_matching_node(Node(easy_grid,True), list([Node(easy_grid,True),Node(medium_grid,True),Node(worst_grid,True)]))
+
+# find_matching_node(Node(easy_grid,True), list([Node(medium_grid,True),Node(worst_grid,True)]))
+
+# def a_star_search(start_grid, use_manhattan=False):
+#     """
+#     Create open list of nodes, initially containing only starting node
+#     """
+#     open_list = PriorityQueue()
+#     first_node = Node(easy_grid, True)
+#     open_list.insert(first_node)
+#
+#     '''
+#     Create the closed list of nodes, initially empty
+#     '''
+#     closed_list = []
+#     reached_goal_state = False
+#     while open_list.size() > 0:
+#         '''
+#         Consider the best node in the open list (the node with the lowest f value)
+#         '''
+#         best_node = open_list.delete()
+#         print(best_node)
+#         if best_node.curr_grid == goal_grid:
+#             # print("The goal has been reached")
+#             reached_goal_state = True
+#             break
+#         else:
+#             closed_list.append(best_node)
+#             successors = best_node.generate_successors()
+#             for successor in successors:
+#                 match_in_closed = find_matching_node(successor, closed_list)
+#                 match_in_open = find_matching_node(successor, open_list.p_queue)
+#
+#                 if match_in_closed is not None and best_node.g < match_in_closed.g:
+#                     '''
+#                     move the node from the closed list to the open list
+#                     '''
+#                     open_list.insert(successor)
+#                     closed_list.remove(match_in_closed)  # Use find_matching_node to remove correct node
+#
+#                     '''update the neighbor with the new, lower g value'''
+#                     successor.g = best_node.g
+#
+#                     '''change the neighbor's parent to our current node'''
+#                     successor.parent_node = best_node
+#                     # to here
+#
+#                 elif match_in_open is not None and best_node.g < match_in_open.g:  # if successor equivalent in
+#                 open list and our current g value is lower than its
+#                     successor.g = best_node.g
+#                     open_list.p_queue.remove(match_in_open)
+#
+#                     pass
+#                 else:
+#                     open_list.insert(successor)
+#
+#     if not reached_goal_state:
+#         print("Failed to reach goal")
+
+
+def a_star_search(start_grid, use_manhattan):
+    """
+    Create open list of nodes, initially containing only starting node
+    """
+    open_list = PriorityQueue()
+    first_node = Node(start_grid, goal_grid, use_manhattan)
+    open_list.insert(first_node)
+
+    '''
+    Create the closed list of nodes, initially empty
+    '''
+    closed_list = []
+    reached_goal_state = False
+    while open_list.size() > 0:
+        '''
+        Consider the best node in the open list (the node with the lowest f value)
+        '''
+        best_node = open_list.delete()
+        print(best_node)
+        if best_node.curr_grid == goal_grid:
+            # print("The goal has been reached")
+            reached_goal_state = True
+            break
         else:
-            self.g = 0
-            self.h = 0
-            self.f = 0
-            self.curr_grid = curr_grid
+            closed_list.append(best_node)
+            successors = best_node.generate_successors()
+            for successor in successors:
+                match_in_closed = find_matching_node(successor, closed_list)
+                match_in_open = find_matching_node(successor, open_list.p_queue)
 
-    @staticmethod
-    def calc_misplaced_tiles_heuristic(curr_grid):
-        # for coordinates in easy_grid.values():
-        #     print(coordinates)
-        misplaced_tiles = 0
-        for (k1, v1), (k2, v2) in zip(curr_grid.items(), goal_grid.items()):
-            # We don't care if the blank is out of place
-            if k1 != k2 and k1 != 0:
-                misplaced_tiles += 1
-            print("start:" + str(k1), str(v1))
-            print("goal:" + str(k2), str(v2))
+                if match_in_closed is not None and best_node.g < match_in_closed.g:
+                    '''
+                    move the node from the closed list to the open list
+                    '''
+                    open_list.insert(successor)
+                    closed_list.remove(match_in_closed)  # Use find_matching_node to remove correct node
 
-        return misplaced_tiles
+                    '''update the neighbor with the new, lower g value'''
+                    successor.g = best_node.g
 
-    # calc_out_of_place_tiles(worst_grid)
+                    '''change the neighbor's parent to our current node'''
+                    successor.parent_node = best_node
+                    # to here
 
-    @staticmethod
-    def calc_manhattan_heuristic(curr_grid):
-        # for coordinates in easy_grid.values():
-        #     print(coordinates)
-        total_manhattan_distance = 0
-        for num in curr_grid:
-            #     #We don't care if the blank is out of place
-            if num != 0:
-                total_manhattan_distance += (
-                        abs(curr_grid[num][0] - goal_grid[num][0]) + (abs(curr_grid[num][1] - goal_grid[num][1])))
+                # if successor equivalent in open list and our current g value is lower than its
+                elif match_in_open is not None and best_node.g < match_in_open.g:
+                    successor.g = best_node.g
+                    open_list.p_queue.remove(match_in_open)
 
-        return total_manhattan_distance
-
-    def __repr__(self):
-        arr = np.empty([3, 3], np.int)
-        for num in self.curr_grid:
-            row, col = self.curr_grid[num]
-            arr[row, col] = num
-        return '\n'.join(['\t'.join([str(cell) for cell in row]) for row in arr])
-
-
-# class for Priority queue
-class PriorityQueue:
-
-    def __init__(self):
-        self.queue = list()
-        # if you want you can set a maximum size for the queue
-
-    def insert(self, node):
-        # if queue is empty
-        if self.size() == 0:
-            # add the new node
-            self.queue.append(node)
-        else:
-            # traverse the queue to find the right place for new node
-            for x in range(self.size()):
-                # if the priority of new node is greater
-                if node.f >= self.queue[x].f:
-                    # if we have traversed the complete queue
-                    if x == (self.size() - 1):
-                        # add new node at the end
-                        self.queue.insert(x + 1, node)
-                    else:
-                        continue
+                    pass
                 else:
-                    self.queue.insert(x, node)
-                    return True
+                    open_list.insert(successor)
 
-    def delete(self):
-        # remove the first node from the queue
-        return self.queue.pop(0)
-
-    # def show(self):
-    #     for x in self.queue:
-    #         print (str(x.info) + " - " + str(x.f))
-
-    def size(self):
-        return len(self.queue)
+    if not reached_goal_state:
+        print("Failed to reach goal")
 
 
-pQueue = PriorityQueue()
-# node1 = Node("C", 3)
-# node2 = Node("B", 2)
-# node3 = Node("A", 1)
-# node4 = Node("Z", 26)
-# node5 = Node("Y", 25)
-# node6 = Node("L", 12)
+print("1. A* search using the heuristic function f*(n) = g(n) + h*(n), where h*(n) is the number of tiles out of place "
+      "(not counting the blank).")
+print("easy grid")
+a_star_search(easy_grid, False)
+print("medium grid")
+a_star_search(medium_grid, False)
+print("hard grid")
+a_star_search(hard_grid, False)
+print("worst grid")
+a_star_search(worst_grid, False)
 
-# node1 = Node()
-# node2 = Node("B", 2)
-# node3 = Node("A", 1)
-# node4 = Node("Z", 26)
-# node5 = Node("Y", 25)
-# node6 = Node("L", 12)
-
-
-node1 = Node(easy_grid, True)
-node2 = Node(medium_grid, True)
-node3 = Node(hard_grid, True)
-pQueue.insert(node1)
-pQueue.insert(node2)
-pQueue.insert(node3)
-
-print(pQueue.delete())
-
-print()
-
-print(pQueue.delete())
-# pQueue.show()
+print("2. A* search using the heuristic function f*(n) = g(n) + h*(n), where h*(n) is the number of tiles out of place")
+print("easy grid")
+a_star_search(easy_grid, True)
+print("medium grid")
+a_star_search(medium_grid, True)
+print("hard grid")
+a_star_search(hard_grid, True)
+print("worst grid")
+a_star_search(worst_grid, True)
