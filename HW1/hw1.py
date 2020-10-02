@@ -1,15 +1,9 @@
 import numpy as np
 
-row = 0
-col = 0
-
-R = (row, col + 1)
-L = (row, col - 1)
-U = (row - 1, col)
-D = (row, col - 1)
+blank = 0
 goal_grid = {
     1: (0, 0), 2: (0, 1), 3: (0, 2),
-    8: (1, 0), 0: (1, 1), 4: (1, 2),
+    8: (1, 0), blank: (1, 1), 4: (1, 2),
     7: (2, 0), 6: (2, 1), 5: (2, 2)
 }
 
@@ -17,12 +11,12 @@ goal_grid = {
 easy_grid = {
     1: (0, 0), 3: (0, 1), 4: (0, 2),
     8: (1, 0), 6: (1, 1), 2: (1, 2),
-    7: (2, 0), 0: (2, 1), 5: (2, 2)
+    7: (2, 0), blank: (2, 1), 5: (2, 2)
 }
 # Out of place 5
 medium_grid = {
     2: (0, 0), 8: (0, 1), 1: (0, 2),
-    0: (1, 0), 4: (1, 1), 3: (1, 2),
+    blank: (1, 0), 4: (1, 1), 3: (1, 2),
     7: (2, 0), 6: (2, 1), 5: (2, 2)
 }
 
@@ -30,25 +24,26 @@ medium_grid = {
 hard_grid = {
     2: (0, 0), 8: (0, 1), 1: (0, 2),
     4: (1, 0), 6: (1, 1), 3: (1, 2),
-    0: (2, 0), 7: (2, 1), 5: (2, 2)
+    blank: (2, 0), 7: (2, 1), 5: (2, 2)
 }
 
 
 class Node:
     def __init__(self, curr_grid: dict, use_manhattan: bool, parent_node=None):
+        self.use_manhattan = use_manhattan
         if parent_node is not None:
             self.parent_node = parent_node
             self.g = parent_node.g + 1
-            self.h = self.calc_manhattan_heuristic(
-                self.curr_grid) if use_manhattan else self.calc_misplaced_tiles_heuristic(self.curr_grid)
+            self.h = self.calc_manhattan_heuristic() if self.use_manhattan else self.calc_misplaced_tiles_heuristic()
             self.f = self.g + self.h
         else:
             self.g = 0
             self.h = 0
             self.f = 0
 
+
         self.curr_grid = curr_grid
-        self.blank_pos = self.curr_grid[0]  # Get Position of the blank
+        self.blank_pos = self.curr_grid[blank]  # Get Position of the blank
         # self.moves = {
         #     'R' : (row, col + 1),
         #     'L' : (row, col - 1),
@@ -56,12 +51,11 @@ class Node:
         #     'D' : (row, col - 1)
         # }
 
-    @staticmethod
-    def calc_misplaced_tiles_heuristic(curr_grid):
+    def calc_misplaced_tiles_heuristic(self):
         # for coordinates in easy_grid.values():
         #     print(coordinates)
         misplaced_tiles = 0
-        for (k1, v1), (k2, v2) in zip(curr_grid.items(), goal_grid.items()):
+        for (k1, v1), (k2, v2) in zip(self.curr_grid.items(), goal_grid.items()):
             # We don't care if the blank is out of place
             if k1 != k2 and k1 != 0:
                 misplaced_tiles += 1
@@ -70,32 +64,28 @@ class Node:
 
     # calc_out_of_place_tiles(worst_grid)
 
-    @staticmethod
-    def calc_manhattan_heuristic(curr_grid):
+    def calc_manhattan_heuristic(self):
         # for coordinates in easy_grid.values():
         #     print(coordinates)
         total_manhattan_distance = 0
-        for num in curr_grid:
+        for num in self.curr_grid:
             #     #We don't care if the blank is out of place
-            if num != 0:
+            if num != blank:
                 total_manhattan_distance += (
-                        abs(curr_grid[num][0] - goal_grid[num][0]) + (abs(curr_grid[num][1] - goal_grid[num][1])))
+                        abs(self.curr_grid[num][blank] - goal_grid[num][blank]) + (
+                    abs(self.curr_grid[num][1] - goal_grid[num][1])))
 
         return total_manhattan_distance
 
     def generate_successors(self):
         row, col = self.blank_pos
-        print("Blank Pos")
-        print(self.blank_pos)
 
         R = (row, col + 1)
-        D = (row+1, col)
+        D = (row + 1, col)
         L = (row, col - 1)
         U = (row - 1, col)
 
-
-        potential_moves = [R,D,L,U]
-
+        potential_moves = [R, D, L, U]
 
         for move in potential_moves:
             row, col = move
@@ -104,26 +94,42 @@ class Node:
         successors = []
 
         for move in potential_moves:
-            successors.append(self.generate_grid(move[1]))
+            successors.append(self.create_successor(move[1]))
 
-        print(successors)
         return successors
 
-    def generate_grid(self, new_blank_pos: tuple):
+    def create_successor(self, new_blank_pos: tuple):
         replace_key = -1
         new_grid = self.curr_grid.copy()
         for key in new_grid:
             if new_grid[key] == new_blank_pos:
                 replace_key = key
-        new_grid[0] = new_blank_pos  # Set the new position of the blank to be the new position
+        new_grid.update()
+        new_grid[blank] = new_blank_pos  # Set the new position of the blank to be the new position
         new_grid[replace_key] = self.blank_pos  # Set the position of the replace_key to the old position of the blank
-        return new_grid
+        return Node(new_grid, self.use_manhattan, self)
+
     def __repr__(self):
         arr = np.empty([3, 3], np.int)
         for num in self.curr_grid:
             row, col = self.curr_grid[num]
             arr[row, col] = num
-        return '\n'.join(['\t'.join([str(cell) for cell in row]) for row in arr])
+        # return '\n'.join(['\t'.join([str(cell) for cell in row]) for row in arr])
+        # return '\n'.join(['\t'.join([str(cell) for cell in _row]) for _row in arr])
+        return_str = ''
+        # for _row in arr:
+        #     return_str +=
+        #     print(*_row, sep=' ')
+
+        return_str = ''
+        for i in range(3):
+            for j in range(3):
+                return_str += str(arr[i,j]) + ' '
+
+            return_str += '\n'
+
+
+        return return_str
 
 
 # class for Priority queue
@@ -133,7 +139,7 @@ class PriorityQueue:
         self.queue = list()
         # if you want you can set a maximum size for the queue
 
-    def insert(self, node):
+    def insert(self, node: Node):
         # if queue is empty
         if self.size() == 0:
             # add the new node
@@ -153,7 +159,7 @@ class PriorityQueue:
                     self.queue.insert(x, node)
                     return True
 
-    def delete(self):
+    def delete(self) -> Node:
         # remove the first node from the queue
         return self.queue.pop(0)
 
@@ -170,18 +176,23 @@ def a_star_search(start_grid, use_manhattan=False):
     open_list = PriorityQueue()
     first_node = Node(easy_grid, True)
     open_list.insert(first_node)
-    first_node.generate_successors()
 
     # Initialize the closed list
     closed_list = []
 
+    q = open_list.delete()
+    print(q)
+    # print(type(q))
+    # successors = q.generate_successors()
+
+    print("Hi")
     # while open_list:
     #     '''
     #     Find the node with the least f. Call it "q" Pop it off the list. I am using a priority queue so this is done
     #     automatically
     #     '''
     #     q = open_list.delete()
-    #     print(q)
+    #     print(type(q))
     #     '''
     #     Generate q's successors and set their parents to q
     #     # '''
