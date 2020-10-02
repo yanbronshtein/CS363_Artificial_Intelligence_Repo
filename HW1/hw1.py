@@ -1,6 +1,12 @@
-
 import numpy as np
 
+row = 0
+col = 0
+
+R = (row, col + 1)
+L = (row, col - 1)
+U = (row - 1, col)
+D = (row, col - 1)
 goal_grid = {
     1: (0, 0), 2: (0, 1), 3: (0, 2),
     8: (1, 0), 0: (1, 1), 4: (1, 2),
@@ -29,19 +35,26 @@ hard_grid = {
 
 
 class Node:
-    def __init__(self, curr_grid, use_manhattan, parent_node=None):
+    def __init__(self, curr_grid: dict, use_manhattan: bool, parent_node=None):
         if parent_node is not None:
             self.parent_node = parent_node
             self.g = parent_node.g + 1
             self.h = self.calc_manhattan_heuristic(
                 self.curr_grid) if use_manhattan else self.calc_misplaced_tiles_heuristic(self.curr_grid)
             self.f = self.g + self.h
-            self.curr_grid = curr_grid
         else:
             self.g = 0
             self.h = 0
             self.f = 0
-            self.curr_grid = curr_grid
+
+        self.curr_grid = curr_grid
+        self.blank_pos = self.curr_grid[0]  # Get Position of the blank
+        # self.moves = {
+        #     'R' : (row, col + 1),
+        #     'L' : (row, col - 1),
+        #     'U' : (row - 1, col),
+        #     'D' : (row, col - 1)
+        # }
 
     @staticmethod
     def calc_misplaced_tiles_heuristic(curr_grid):
@@ -52,8 +65,6 @@ class Node:
             # We don't care if the blank is out of place
             if k1 != k2 and k1 != 0:
                 misplaced_tiles += 1
-            print("start:" + str(k1), str(v1))
-            print("goal:" + str(k2), str(v2))
 
         return misplaced_tiles
 
@@ -72,6 +83,41 @@ class Node:
 
         return total_manhattan_distance
 
+    def generate_successors(self):
+        row, col = self.blank_pos
+        print("Blank Pos")
+        print(self.blank_pos)
+
+        R = (row, col + 1)
+        D = (row+1, col)
+        L = (row, col - 1)
+        U = (row - 1, col)
+
+
+        potential_moves = [R,D,L,U]
+
+
+        for move in potential_moves:
+            row, col = move
+            if row > 2 or col > 2 or row < 0 or col < 0:
+                potential_moves.remove(move)
+        successors = []
+
+        for move in potential_moves:
+            successors.append(self.generate_grid(move[1]))
+
+        print(successors)
+        return successors
+
+    def generate_grid(self, new_blank_pos: tuple):
+        replace_key = -1
+        new_grid = self.curr_grid.copy()
+        for key in new_grid:
+            if new_grid[key] == new_blank_pos:
+                replace_key = key
+        new_grid[0] = new_blank_pos  # Set the new position of the blank to be the new position
+        new_grid[replace_key] = self.blank_pos  # Set the position of the replace_key to the old position of the blank
+        return new_grid
     def __repr__(self):
         arr = np.empty([3, 3], np.int)
         for num in self.curr_grid:
@@ -120,34 +166,31 @@ class PriorityQueue:
 
 
 def a_star_search(start_grid, use_manhattan=False):
-    #Initialize the open list
+    # Initialize the open list
     open_list = PriorityQueue()
-    node1 = Node(start_grid,use_manhattan)
-    node2 = Node(start_grid,use_manhattan)
-    node3 = Node(start_grid,use_manhattan)
+    first_node = Node(easy_grid, True)
+    open_list.insert(first_node)
+    first_node.generate_successors()
 
-
-
-    #Initialize the closed list
+    # Initialize the closed list
     closed_list = []
 
-    while open_list:
-        '''
-        Find the node with the least f. Call it "q" Pop it off the list. I am using a priority queue so this is done
-        automatically
-        '''
-        q = open_list.get()
-        print(q[1])
-        '''
-        Generate q's successors and set their parents to q
-        '''
+    # while open_list:
+    #     '''
+    #     Find the node with the least f. Call it "q" Pop it off the list. I am using a priority queue so this is done
+    #     automatically
+    #     '''
+    #     q = open_list.delete()
+    #     print(q)
+    #     '''
+    #     Generate q's successors and set their parents to q
+    #     # '''
 
 
 a_star_search(easy_grid)
 
-
-    # while open_list :
-    #     curr_
+# while open_list :
+#     curr_
 #
 #
 #
