@@ -6,7 +6,6 @@ goal_grid = {
     8: (1, 0), blank: (1, 1), 4: (1, 2),
     7: (2, 0), 6: (2, 1), 5: (2, 2)
 }
-
 # Out of place 4
 easy_grid = {
     1: (0, 0), 3: (0, 1), 4: (0, 2),
@@ -19,7 +18,6 @@ medium_grid = {
     blank: (1, 0), 4: (1, 1), 3: (1, 2),
     7: (2, 0), 6: (2, 1), 5: (2, 2)
 }
-
 # Out of place 7
 hard_grid = {
     2: (0, 0), 8: (0, 1), 1: (0, 2),
@@ -43,15 +41,6 @@ class Node:
             self.h = 0
             self.f = 0
 
-
-
-        # self.moves = {
-        #     'R' : (row, col + 1),
-        #     'L' : (row, col - 1),
-        #     'U' : (row - 1, col),
-        #     'D' : (row, col - 1)
-        # }
-
     def calc_misplaced_tiles_heuristic(self):
         # for coordinates in easy_grid.values():
         #     print(coordinates)
@@ -63,30 +52,27 @@ class Node:
 
         return misplaced_tiles
 
-    # calc_out_of_place_tiles(worst_grid)
-
     def calc_manhattan_heuristic(self):
         # for coordinates in easy_grid.values():
-        #     print(coordinates)
         total_manhattan_distance = 0
         for num in self.curr_grid:
             #     #We don't care if the blank is out of place
             if num != blank:
                 total_manhattan_distance += (
-                        abs(self.curr_grid[num][blank] - goal_grid[num][blank]) + (
-                    abs(self.curr_grid[num][1] - goal_grid[num][1])))
+                        abs(self.curr_grid[num][blank] - goal_grid[num][blank]) + (abs(self.curr_grid[num][1] -
+                                                                                       goal_grid[num][1])))
 
         return total_manhattan_distance
 
     def generate_successors(self):
         row, col = self.blank_pos
 
-        R = (row, col + 1)
-        D = (row + 1, col)
-        L = (row, col - 1)
-        U = (row - 1, col)
+        right = (row, col + 1)
+        down = (row + 1, col)
+        left = (row, col - 1)
+        up = (row - 1, col)
 
-        potential_moves = [R, D, L, U]
+        potential_moves = [right, down, left, up]
 
         for move in potential_moves:
             row, col = move
@@ -95,7 +81,6 @@ class Node:
         successors = []
 
         for move in potential_moves:
-
             successors.append(self.create_successor(move))
 
         return successors
@@ -116,20 +101,13 @@ class Node:
         for num in self.curr_grid:
             row, col = self.curr_grid[num]
             arr[row, col] = num
-        # return '\n'.join(['\t'.join([str(cell) for cell in row]) for row in arr])
-        # return '\n'.join(['\t'.join([str(cell) for cell in _row]) for _row in arr])
-        return_str = ''
-        # for _row in arr:
-        #     return_str +=
-        #     print(*_row, sep=' ')
 
         return_str = ''
         for i in range(3):
             for j in range(3):
-                return_str += str(arr[i,j]) + ' '
+                return_str += str(arr[i, j]) + ' '
 
             return_str += '\n'
-
 
         return return_str
 
@@ -165,10 +143,6 @@ class PriorityQueue:
         # remove the first node from the queue
         return self.queue.pop(0)
 
-    # def show(self):
-    #     for x in self.queue:
-    #         print (str(x.info) + " - " + str(x.f))
-
     def size(self):
         return len(self.queue)
 
@@ -200,7 +174,7 @@ def a_star_search(start_grid, use_manhattan=False):
     #     # '''
 
 
-a_star_search(easy_grid)
+a_star_search(easy_grid, True)
 
 # while open_list :
 #     curr_
