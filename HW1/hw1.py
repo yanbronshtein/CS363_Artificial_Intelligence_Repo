@@ -1,3 +1,5 @@
+from typing import List
+
 import numpy as np
 
 blank = 0
@@ -23,6 +25,13 @@ hard_grid = {
     2: (0, 0), 8: (0, 1), 1: (0, 2),
     4: (1, 0), 6: (1, 1), 3: (1, 2),
     blank: (2, 0), 7: (2, 1), 5: (2, 2)
+}
+
+# out of place
+worst_grid = {
+    5: (0, 0), 6: (0, 1), 7: (0, 2),
+    4: (1, 0), 0: (1, 1), 8: (1, 2),
+    3: (2, 0), 2: (2, 1), 1: (2, 2)
 }
 
 
@@ -144,6 +153,7 @@ class Node:
             arr[row, col] = num
 
         return_str = ''
+        #todo: range(3) or range(2)
         for i in range(3):
             for j in range(3):
                 return_str += str(arr[i, j]) + ' '
@@ -194,7 +204,10 @@ class PriorityQueue:
         This method removes the first node in the queue
         :return: removed element
         """
-        return self.p_queue.pop(0)
+        try:
+            return self.p_queue.pop(0)
+        except IndexError:
+            pass
 
     def size(self):
         """
@@ -203,11 +216,29 @@ class PriorityQueue:
         return len(self.p_queue)
 
 
+def find_matching_node(node: Node, node_list: List[Node]) -> Node:
+    """
+    This function attempts to find the first node with a matching grid. In anticipation of duplicates,
+    this function breaks after the first match, ignoring all others.
+    :param node_list: list of nodes
+    :type node: Node
+    :return match or None
+    """
+    match = None
+    for item in node_list:
+        if node.curr_grid == item.curr_grid:
+            match = item
+            break
+    return match
+
+# find_matching_node(Node(easy_grid,True), list([Node(easy_grid,True),Node(medium_grid,True),Node(worst_grid,True)]))
+
+find_matching_node(Node(easy_grid,True), list([Node(medium_grid,True),Node(worst_grid,True)]))
+
 def a_star_search(start_grid, use_manhattan=False):
-    print("hi")
-    ''' 
+    """
     Create open list of nodes, initially containing only starting node
-    '''
+    """
     open_list = PriorityQueue()
     first_node = Node(easy_grid, True)
     open_list.insert(first_node)
@@ -216,8 +247,8 @@ def a_star_search(start_grid, use_manhattan=False):
     Create the closed list of nodes, initially empty
     '''
     closed_list = []
-
-    while True:
+    reached_goal_state = False
+    while open_list.size() > 0:
         '''
         Consider the best node in the open list (the node with the lowest f value)
         '''
@@ -225,26 +256,42 @@ def a_star_search(start_grid, use_manhattan=False):
 
         if best_node.curr_grid == goal_grid:
             print("The goal has been reached")
+            reached_goal_state = True
             break
         else:
             closed_list.append(best_node)
             successors = best_node.generate_successors()
             for successor in successors:
-                if successor in closed_list and best_node.g < successor.g:
+                if successor.curr_grid in list(map(lambda x:x.curr_grid,closed_list)) and best_node.g < successor.g:
+                    # ... and best_node.g< x(successor.curr_grid, closed_list):
                     '''
                     move the node from the closed list to the open list
                     '''
                     open_list.insert(successor)
                     closed_list.remove(successor)
-
+                    '''
+                    #open_list.insert(successor)
+                    #closed_list.remove(x(successor.curr_grid, closed_list)) removing olde less iffecient route to succesor 
+                    #delete from here
+                    '''
                     '''update the neighbor with the new, lower g value'''
                     successor.g = best_node.g
 
                     '''change the neighbor's parent to our current node'''
                     successor.parent_node = best_node
+                    #to here
+                elif True: #if successor equivlent in open list and our current g value is lower tthan its
+                    #remove equivlent node from open list
+                    #add successor to open list
+                    pass
+                else:
+                    open_list.insert(successor)
 
+    if not reached_goal_state:
+        print("Failed to reach goal")
     # Initialize the closed list
-
+    # todo: Create a function that takes a grid and a list of node objects and returns the node object with the
+    #matching grid
     q = open_list.delete()
     print(q)
     # print(type(q))
@@ -258,4 +305,4 @@ def a_star_search(start_grid, use_manhattan=False):
             successor.g = q.g
 
 
-a_star_search(easy_grid, True)
+# a_star_search(easy_grid, True)
