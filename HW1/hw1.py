@@ -233,7 +233,7 @@ def find_matching_node(node: Node, node_list: List[Node]) -> Node:
 
 # find_matching_node(Node(easy_grid,True), list([Node(easy_grid,True),Node(medium_grid,True),Node(worst_grid,True)]))
 
-find_matching_node(Node(easy_grid,True), list([Node(medium_grid,True),Node(worst_grid,True)]))
+# find_matching_node(Node(easy_grid,True), list([Node(medium_grid,True),Node(worst_grid,True)]))
 
 def a_star_search(start_grid, use_manhattan=False):
     """
@@ -253,56 +253,61 @@ def a_star_search(start_grid, use_manhattan=False):
         Consider the best node in the open list (the node with the lowest f value)
         '''
         best_node = open_list.delete()
-
+        print(best_node)
         if best_node.curr_grid == goal_grid:
-            print("The goal has been reached")
+            # print("The goal has been reached")
             reached_goal_state = True
             break
         else:
             closed_list.append(best_node)
             successors = best_node.generate_successors()
             for successor in successors:
-                if successor.curr_grid in list(map(lambda x:x.curr_grid,closed_list)) and best_node.g < successor.g:
-                    # ... and best_node.g< x(successor.curr_grid, closed_list):
+                match_in_closed = find_matching_node(successor, closed_list)
+                match_in_open = find_matching_node(successor, open_list.p_queue)
+
+                if match_in_closed is not None and best_node.g < match_in_closed.g:
                     '''
                     move the node from the closed list to the open list
                     '''
                     open_list.insert(successor)
-                    closed_list.remove(successor)
-                    '''
-                    #open_list.insert(successor)
-                    #closed_list.remove(x(successor.curr_grid, closed_list)) removing olde less iffecient route to succesor 
-                    #delete from here
-                    '''
+                    closed_list.remove(match_in_closed) #Use find_matching_node to remove correct node
+
                     '''update the neighbor with the new, lower g value'''
                     successor.g = best_node.g
 
                     '''change the neighbor's parent to our current node'''
                     successor.parent_node = best_node
                     #to here
-                elif True: #if successor equivlent in open list and our current g value is lower tthan its
-                    #remove equivlent node from open list
-                    #add successor to open list
+
+                elif match_in_open is not None and best_node.g < match_in_open.g  : #if successor equivlent in open list and our current g value is lower tthan its
+                    successor.g = best_node.g
+                    open_list.p_queue.remove(match_in_open)
+
                     pass
                 else:
                     open_list.insert(successor)
 
     if not reached_goal_state:
         print("Failed to reach goal")
-    # Initialize the closed list
-    # todo: Create a function that takes a grid and a list of node objects and returns the node object with the
-    #matching grid
-    q = open_list.delete()
-    print(q)
-    # print(type(q))
-    successors = q.generate_successors()
 
-    for successor in successors:
-        if successor.curr_grid == goal_grid:
-            print("Goal reached")
-            break
-        else:
-            successor.g = q.g
+print("1. A* search using the heuristic function f*(n) = g(n) + h*(n), where h*(n) is the number of tiles out of place "
+      "(not counting the blank).")
+print("easy grid")
+a_star_search(easy_grid, False)
+print("medium grid")
+a_star_search(medium_grid, False)
+print("hard grid")
+a_star_search(hard_grid, False)
+print("worst grid")
+a_star_search(worst_grid, False)
 
 
-# a_star_search(easy_grid, True)
+print("2. A* search using the heuristic function f*(n) = g(n) + h*(n), where h*(n) is the number of tiles out of place")
+print("easy grid")
+a_star_search(easy_grid, True)
+print("medium grid")
+a_star_search(medium_grid, True)
+print("hard grid")
+a_star_search(hard_grid, True)
+print("worst grid")
+a_star_search(worst_grid, True)
