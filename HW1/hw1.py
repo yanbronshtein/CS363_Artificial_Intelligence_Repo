@@ -31,6 +31,8 @@ hard_grid = {
 class Node:
     def __init__(self, curr_grid: dict, use_manhattan: bool, parent_node=None):
         self.use_manhattan = use_manhattan
+        self.curr_grid = curr_grid
+        self.blank_pos = self.curr_grid[blank]  # Get Position of the blank
         if parent_node is not None:
             self.parent_node = parent_node
             self.g = parent_node.g + 1
@@ -42,8 +44,7 @@ class Node:
             self.f = 0
 
 
-        self.curr_grid = curr_grid
-        self.blank_pos = self.curr_grid[blank]  # Get Position of the blank
+
         # self.moves = {
         #     'R' : (row, col + 1),
         #     'L' : (row, col - 1),
@@ -94,7 +95,8 @@ class Node:
         successors = []
 
         for move in potential_moves:
-            successors.append(self.create_successor(move[1]))
+
+            successors.append(self.create_successor(move))
 
         return successors
 
@@ -104,7 +106,7 @@ class Node:
         for key in new_grid:
             if new_grid[key] == new_blank_pos:
                 replace_key = key
-        new_grid.update()
+                break
         new_grid[blank] = new_blank_pos  # Set the new position of the blank to be the new position
         new_grid[replace_key] = self.blank_pos  # Set the position of the replace_key to the old position of the blank
         return Node(new_grid, self.use_manhattan, self)
@@ -183,7 +185,7 @@ def a_star_search(start_grid, use_manhattan=False):
     q = open_list.delete()
     print(q)
     # print(type(q))
-    # successors = q.generate_successors()
+    successors = q.generate_successors()
 
     print("Hi")
     # while open_list:
