@@ -198,6 +198,8 @@ def a_star_search(start_grid, use_manhattan):
         Consider the best node in the open list (the node with the lowest f value)
         '''
         best_node = open_list.delete()
+        # print("best node")
+        # print(best_node)
         # print(best_node)
         if best_node.curr_grid == goal_grid:
             # print("The goal has been reached")
@@ -219,15 +221,14 @@ def a_star_search(start_grid, use_manhattan):
                 match_in_open = find_matching_node(successor, open_list.p_queue)
 
                 # if match_in_closed is not None and best_node.g < match_in_closed.g:
-                if match_in_closed:
-                    if successor.f < match_in_closed.f:
-                        match_in_closed.f = successor.f
-                        open_list.insert(match_in_closed)
-                        closed_list.remove(match_in_closed)
-                elif match_in_open:
-                    if successor.f < match_in_open.f:
-                        match_in_open.f = successor.f
-                    # to here
+                if match_in_closed and successor.f < match_in_closed.f:
+                    match_in_closed.f = successor.f
+                    match_in_closed.parent_node = successor.parent_node
+                    open_list.insert(match_in_closed)
+                    closed_list.remove(match_in_closed)
+                elif match_in_open and successor.f < match_in_open.f:
+                    match_in_open.f = successor.f
+                    match_in_closed.parent_node = successor.parent_node
                 else:
                     open_list.insert(successor)
 
@@ -248,13 +249,13 @@ def main():
     # print("worst grid")
     # a_star_search(worst_grid, False)
 
-    print(
-        "2. A* search using the heuristic function f*(n) = g(n) + h*(n), where h*(n) is the number of tiles out of "
-        "place")
-    print("easy grid")
-    a_star_search(easy_grid, True)
+    # print(
+    #     "2. A* search using the heuristic function f*(n) = g(n) + h*(n), where h*(n) is the number of tiles out of "
+    #     "place")
+    # print("easy grid")
+    # a_star_search(easy_grid, True)
     # print("medium grid")
-    # a_star_search(medium_grid, True)
+    a_star_search(medium_grid, True)
     # print("hard grid")
     # a_star_search(hard_grid, True)
     # print("worst grid")
