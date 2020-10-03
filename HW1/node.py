@@ -56,7 +56,8 @@ class Node:
         for num in self.curr_grid:
             if num != blank:
                 total_manhattan_distance += (
-                        abs(self.curr_grid[num][blank] - self.goal_grid[num][blank]) + (abs(self.curr_grid[num][1] -
+
+                        abs(self.curr_grid[num][0] - self.goal_grid[num][0]) + (abs(self.curr_grid[num][1] -
                                                                                             self.goal_grid[num][1])))
 
         return total_manhattan_distance
@@ -76,12 +77,44 @@ class Node:
 
         potential_moves = [right, down, left, up]
 
-        # Remove moves that result in the tile moving out of the bounds of the grid
-        for move in potential_moves:
-            row, col = move
-            if row > 2 or col > 2 or row < 0 or col < 0:
-                potential_moves.remove(move)
+        if right[1] > 2:
+            potential_moves.remove(right)
 
+        if down[0] > 2:
+            potential_moves.remove(down)
+
+        if left[1] < 0:
+            potential_moves.remove(left)
+
+        if up[0] < 0:
+            potential_moves.remove(up)
+
+        # Remove moves that result in the tile moving out of the bounds of the grid
+        # for move in potential_moves:
+        #     row, col = move
+        #     # if row > 2 or col > 2 or row < 0 or col < 0:
+        #     #             #     potential_moves.remove(move)
+        #     if row > 2:
+        #         potential_moves.remove(move)
+
+
+        if col > 2:
+            potential_moves.remove(right)
+        if row > 2:
+            potential_moves.remove(down)
+        if col < 0:
+            potential_moves.remove(left)
+        if row < 0:
+            potential_moves.remove(up)
+        # for move in potential_moves:
+        #     if col > 2:
+        #         potential_moves.remove(move)
+        #     if row > 2:
+        #         potential_moves.remove(move)
+        #     if col < 0:
+        #         potential_moves.remove(move)
+        #     if row < 0:
+        #         potential_moves.remove(move)
         # Generate all the valid grid configurations after the valid moves are applied and append them to
         # the successor list
         successors = []
@@ -100,6 +133,8 @@ class Node:
         # Determine the number currently located in the desired position of the blank tile
         tile_to_replace = -1
         new_grid = self.curr_grid.copy()
+        # print("Inside create successor. new_blank_pos")
+        # print(new_blank_pos)
         for key in new_grid:
             if new_grid[key] == new_blank_pos:
                 tile_to_replace = key
@@ -107,9 +142,9 @@ class Node:
 
         # Swap the positions of the blank and the replaced tile
         new_grid[blank] = new_blank_pos
-        new_grid[
-            # Set the position of the replaced number to the old position of the blank
-            tile_to_replace] = self.blank_pos
+        # Set the position of the replaced number to the old position of the blank
+
+        new_grid[tile_to_replace] = self.blank_pos
         return Node(new_grid, self.goal_grid, self.use_manhattan, self)
 
     def __repr__(self):

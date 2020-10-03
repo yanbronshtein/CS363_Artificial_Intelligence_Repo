@@ -41,13 +41,20 @@ class PriorityQueue:
         This method removes the first node in the queue
         :return: removed element
         """
-        try:
-            return self.p_queue.pop(0)
-        except IndexError:
-            pass
+
+        return self.p_queue.pop(0)
+
 
     def size(self):
         """
         :return: The length of the internal list
         """
         return len(self.p_queue)
+
+    def print_queue(self):
+        print("queue start")
+        for elem in self.p_queue:
+            print(elem)
+
+        print("queue end")
+

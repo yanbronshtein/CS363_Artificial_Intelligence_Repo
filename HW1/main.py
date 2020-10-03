@@ -194,6 +194,7 @@ def a_star_search(start_grid, use_manhattan):
     closed_list = []
     reached_goal_state = False
     while open_list.size() > 0:
+        # open_list.print_queue()
         '''
         Consider the best node in the open list (the node with the lowest f value)
         '''
@@ -216,9 +217,10 @@ def a_star_search(start_grid, use_manhattan):
 
             successors = best_node.generate_successors()
             for successor in successors:
-
                 match_in_closed = find_matching_node(successor, closed_list)
                 match_in_open = find_matching_node(successor, open_list.p_queue)
+                # open_list.print_queue()
+
 
                 # if match_in_closed is not None and best_node.g < match_in_closed.g:
                 if match_in_closed and successor.f < match_in_closed.f:
