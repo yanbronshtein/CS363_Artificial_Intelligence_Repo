@@ -1,7 +1,7 @@
 from node import Node
 from priority_queue import PriorityQueue
 from typing import List
-
+import numpy as np
 blank = 0
 goal_grid = {
     1: (0, 0), 2: (0, 1), 3: (0, 2),
@@ -238,6 +238,53 @@ def a_star_search(start_grid, use_manhattan):
         print("Failed to reach goal")
 
 
+# def branch_and_bound(start_grid, use_manhattan):
+#     Q = PriorityQueue()
+#     Q.insert(Node(start_grid, goal_grid, use_manhattan))
+#     L = np.inf #Initialize to infinity
+#
+#     while Q.size() > 0:
+#         #Pull Q1, the first element in Q
+#         Q1 = Q.delete()
+#         if Q1.curr_grid == goal_grid:
+#             reached_goal_state = True
+#             trace_and_print(Q1)
+#             L = np.min(Q1.f, old_cost)
+#             break
+#         else:
+#             child_nodes = Q1.generate_successors()
+#             #eliminate child_nodes which represent simple loops
+#             for child in child_nodes:
+#                 if child.f < L:
+#                     Q.insert(child)
+#
+#     if not reached_goal_state:
+#         print("Failed to reach goal")
+
+
+
+def branch_and_bound_search(start_grid, use_manhattan):
+    p_queue = PriorityQueue()
+    root = Node(start_grid, goal_grid, use_manhattan)
+    p_queue.insert(root)
+
+    while p_queue.size() > 0:
+        min_node = p_queue.delete()
+        if min_node.curr_grid == goal_grid:
+            trace_and_print(min_node)
+            break
+
+        successors = min_node.generate_successors()
+        for successor in successors:
+            p_queue.insert(successor)
+
+
+
+
+
+
+
+
 def main():
     # print("1. A* search using the heuristic function f*(n) = g(n) + h*(n), where h*(n) is the number of tiles out of "
     #       "place "
@@ -257,12 +304,11 @@ def main():
     # print("easy grid")
     # a_star_search(easy_grid, True)
     # print("medium grid")
-    a_star_search(medium_grid, True)
+    # a_star_search(medium_grid, True)
     # print("hard grid")
     # a_star_search(hard_grid, True)
     # print("worst grid")
     # a_star_search(worst_grid, True)
-
-
+    branch_and_bound(easy_grid, True)
 if __name__ == '__main__':
     main()
