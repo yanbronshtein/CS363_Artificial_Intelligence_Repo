@@ -34,7 +34,7 @@ worst_grid = {
     3: (2, 0), 2: (2, 1), 1: (2, 2)
 }
 
-
+# todo: reimplement
 def find_matching_node(node: Node, node_list: List[Node]) -> Node:
     """
     This function attempts to find the first node with a matching grid. In anticipation of duplicates,
@@ -111,6 +111,64 @@ def find_matching_node(node: Node, node_list: List[Node]) -> Node:
 #     if not reached_goal_state:
 #         print("Failed to reach goal")
 
+# def a_star_search(start_grid, use_manhattan):
+#     """
+#     Create open list of nodes, initially containing only starting node
+#     """
+#     open_list = PriorityQueue()
+#     first_node = Node(start_grid, goal_grid, use_manhattan)
+#     open_list.insert(first_node)
+#
+#     '''
+#     Create the closed list of nodes, initially empty
+#     '''
+#     closed_list = []
+#     reached_goal_state = False
+#     while open_list.size() > 0 and not reached_goal_state:
+#         '''
+#         Consider the best node in the open list (the node with the lowest f value)
+#         '''
+#         best_node = open_list.delete()
+#         print(best_node)
+#         if best_node.curr_grid == goal_grid:
+#             # print("The goal has been reached")
+#             reached_goal_state = True
+#             break
+#         else:
+#             closed_list.append(best_node)
+#
+#             successors = best_node.generate_successors()
+#             for successor in successors:
+#
+#                 match_in_closed = find_matching_node(successor, closed_list)
+#                 match_in_open = find_matching_node(successor, open_list.p_queue)
+#
+#                 if match_in_closed is not None and best_node.g < match_in_closed.g:
+#                     '''
+#                     move the node from the closed list to the open list
+#                     '''
+#                     open_list.insert(successor)
+#                     closed_list.remove(match_in_closed)  # Use find_matching_node to remove correct node
+#
+#                     '''update the neighbor with the new, lower g value'''
+#                     successor.g = best_node.g
+#
+#                     '''change the neighbor's parent to our current node'''
+#                     successor.parent_node = best_node
+#                     # to here
+#
+#                 # if successor equivalent in open list and our current g value is lower than its
+#                 elif match_in_open is not None and best_node.g < match_in_open.g:
+#                     successor.g = best_node.g
+#                     open_list.p_queue.remove(match_in_open)
+#
+#                     pass
+#                 else:
+#                     open_list.insert(successor)
+#
+#     if not reached_goal_state:
+#         print("Failed to reach goal")
+
 
 def a_star_search(start_grid, use_manhattan):
     """
@@ -125,7 +183,7 @@ def a_star_search(start_grid, use_manhattan):
     '''
     closed_list = []
     reached_goal_state = False
-    while open_list.size() > 0:
+    while open_list.size() > 0 and not reached_goal_state:
         '''
         Consider the best node in the open list (the node with the lowest f value)
         '''
@@ -137,8 +195,10 @@ def a_star_search(start_grid, use_manhattan):
             break
         else:
             closed_list.append(best_node)
+
             successors = best_node.generate_successors()
             for successor in successors:
+
                 match_in_closed = find_matching_node(successor, closed_list)
                 match_in_open = find_matching_node(successor, open_list.p_queue)
 
@@ -167,7 +227,6 @@ def a_star_search(start_grid, use_manhattan):
 
     if not reached_goal_state:
         print("Failed to reach goal")
-
 
 print("1. A* search using the heuristic function f*(n) = g(n) + h*(n), where h*(n) is the number of tiles out of place "
       "(not counting the blank).")
