@@ -1,5 +1,5 @@
 import numpy as np
-
+from typing import List
 blank = 0
 
 
@@ -61,7 +61,7 @@ class Node:
 
         return total_manhattan_distance
 
-    def generate_successors(self) -> list:
+    def generate_successors(self):
         """
         This method generates all possible moves for the blank tile
         :return: A list of Node objects representing the resulting grids after the available moves are applied

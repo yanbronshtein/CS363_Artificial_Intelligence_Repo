@@ -1,4 +1,4 @@
-import Node
+import node
 
 
 class PriorityQueue:
@@ -9,7 +9,7 @@ class PriorityQueue:
         """
         self.p_queue = []
 
-    def insert(self, node: Node) -> bool:
+    def insert(self, node: node) -> bool:
         """
         This method inserts a node into the priority queue.
         If the internal list is empty, the new node is appended.
@@ -36,7 +36,7 @@ class PriorityQueue:
                     self.p_queue.insert(i, node)
                     return True
 
-    def delete(self) -> Node:
+    def delete(self) -> node:
         """
         This method removes the first node in the queue
         :return: removed element
