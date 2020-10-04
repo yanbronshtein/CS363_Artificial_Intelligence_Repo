@@ -17,6 +17,7 @@ class Node:
         self.goal_grid = goal_grid
         self.use_manhattan = use_manhattan
         self.parent_node = parent_node
+        self.move_type = ''
         # If the current node has a parent, calculate g,h, and f. Else, initialize f,g, and h to 0
         if self.parent_node is not None:
             self.g = parent_node.g + 1
@@ -77,15 +78,19 @@ class Node:
 
         potential_moves = [right, down, left, up]
 
+        # A column value of 3 is illegal for a right move
         if right[1] > 2:
             potential_moves.remove(right)
 
+        # A row value of 3 is illegal for a down move
         if down[0] > 2:
             potential_moves.remove(down)
 
+        # A column value of -1 is illegal for a left move
         if left[1] < 0:
             potential_moves.remove(left)
 
+        # A row value of -1 is illegal for an up move
         if up[0] < 0:
             potential_moves.remove(up)
 
@@ -97,15 +102,6 @@ class Node:
         #     if row > 2:
         #         potential_moves.remove(move)
 
-
-        if col > 2:
-            potential_moves.remove(right)
-        if row > 2:
-            potential_moves.remove(down)
-        if col < 0:
-            potential_moves.remove(left)
-        if row < 0:
-            potential_moves.remove(up)
         # for move in potential_moves:
         #     if col > 2:
         #         potential_moves.remove(move)

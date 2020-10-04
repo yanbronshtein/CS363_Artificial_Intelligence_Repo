@@ -2,18 +2,34 @@ from node import Node
 from priority_queue import PriorityQueue
 from typing import List
 import numpy as np
+import math
+import sys
 blank = 0
 goal_grid = {
     1: (0, 0), 2: (0, 1), 3: (0, 2),
     8: (1, 0), blank: (1, 1), 4: (1, 2),
     7: (2, 0), 6: (2, 1), 5: (2, 2)
 }
+
+
+# goal_grid = {
+#     1: (0, 0), 2: (0, 1), 3: (0, 2),
+#     4: (1, 0), 5: (1, 1), 6: (1, 2),
+#     7: (2, 0), 8: (2, 1), blank: (2, 2)
+# }
 # Out of place 4
 easy_grid = {
     1: (0, 0), 3: (0, 1), 4: (0, 2),
     8: (1, 0), 6: (1, 1), 2: (1, 2),
     7: (2, 0), blank: (2, 1), 5: (2, 2)
 }
+
+
+# easy_grid = {
+#     1: (0, 0), 8: (0, 1), 2: (0, 2),
+#     blank: (1, 0), 4: (1, 1), 3: (1, 2),
+#     7: (2, 0), 6: (2, 1), 5: (2, 2)
+# }
 # Out of place 5
 medium_grid = {
     2: (0, 0), 8: (0, 1), 1: (0, 2),
@@ -170,17 +186,20 @@ def find_matching_node(node: Node, node_list: List[Node]) -> Node:
     return match
 
 
-def trace_and_print(best_node: Node):
+def trace_and_print(start_grid: Node, best_node: Node):
     node_ptr = best_node
     print_list = []
     while node_ptr.parent_node is not None:
         print_list.insert(0, node_ptr)
         node_ptr = node_ptr.parent_node
+    print("Start Grid")
+    print(start_grid)
     for node in print_list:
+        print("Move #: " + str(node.g))
         print(node)
 
 
-def a_star_search(start_grid, use_manhattan):
+def a_star_search(start_grid: dict , use_manhattan):
     """
     Create open list of nodes, initially containing only starting node
     """
@@ -209,7 +228,7 @@ def a_star_search(start_grid, use_manhattan):
             tracing back the pointers from n to s.
             """
             reached_goal_state = True
-            trace_and_print(best_node)
+            trace_and_print(first_node, best_node)
             break
         else:
 
@@ -267,18 +286,23 @@ def branch_and_bound_search(start_grid, use_manhattan):
     p_queue = PriorityQueue()
     root = Node(start_grid, goal_grid, use_manhattan)
     p_queue.insert(root)
-
+    L = sys.maxsize
     while p_queue.size() > 0:
         min_node = p_queue.delete()
-        if min_node.curr_grid == goal_grid:
-            trace_and_print(min_node)
-            break
+        if min_node.f >= L:
+            continue
+        elif min_node.curr_grid == goal_grid:
+            L = min_node.g if min_node.g < L else L
+            trace_and_print(root, min_node)
+        else:
+            successors = min_node.generate_successors()
 
-        successors = min_node.generate_successors()
-        for successor in successors:
-            p_queue.insert(successor)
+            for successor in successors:
+                if successor.f <= L:
+                    p_queue.insert(successor)
 
 
+# def iterative_deepening_a_star_search(start_grid, use_manhattan):
 
 
 
@@ -302,13 +326,13 @@ def main():
     #     "2. A* search using the heuristic function f*(n) = g(n) + h*(n), where h*(n) is the number of tiles out of "
     #     "place")
     # print("easy grid")
-    # a_star_search(easy_grid, True)
+    # a_star_search(start_grid=easy_grid, use_manhattan=True)
     # print("medium grid")
-    # a_star_search(medium_grid, True)
-    # print("hard grid")
-    # a_star_search(hard_grid, True)
+    # a_star_search(start_grid=medium_grid, use_manhattan=True)
+    print("hard grid")
+    a_star_search(start_grid=hard_grid, use_manhattan=True)
     # print("worst grid")
     # a_star_search(worst_grid, True)
-    branch_and_bound(easy_grid, True)
+    # branch_and_bound_search(easy_grid, True)
 if __name__ == '__main__':
     main()
