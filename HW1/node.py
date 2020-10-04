@@ -64,7 +64,7 @@ class Node:
 
         return total_manhattan_distance
 
-    def generate_successors(self):
+    def generate_successors_a_star(self):
         """
         This method generates all possible moves for the blank tile
         :return: A list of Node objects representing the resulting grids after the available moves are applied
@@ -130,6 +130,92 @@ class Node:
             if move == up:
                 successors.append(self.create_successor(move, up_str))
 
+        return successors
+
+    def generate_successors_branch_and_bound(self):
+        """
+        This method generates all possible moves for the blank tile
+        :return: A list of Node objects representing the resulting grids after the available moves are applied
+        """
+
+        row, col = self.blank_pos
+        # Definition of moves available.
+        right = (row, col + 1)
+        down = (row + 1, col)
+        left = (row, col - 1)
+        up = (row - 1, col)
+
+        right_str = 'right ' + str(self.blank_pos) + "->" + str(right)
+        down_str = 'down ' + str(self.blank_pos) + "->" + str(down)
+        left_str = 'left ' + str(self.blank_pos) + "->" + str(left)
+        up_str = 'up ' + str(self.blank_pos) + "->" + str(up)
+        potential_moves = [right, down, left, up]
+
+        # A column value of 3 is illegal for a right move
+
+        if right[1] > 2:
+            potential_moves.remove(right)
+
+        # A row value of 3 is illegal for a down move
+        if down[0] > 2:
+            potential_moves.remove(down)
+
+        # A column value of -1 is illegal for a left move
+        if left[1] < 0:
+            potential_moves.remove(left)
+
+        # A row value of -1 is illegal for an up move
+        if up[0] < 0:
+            potential_moves.remove(up)
+
+
+        # Remove moves that result in the tile moving out of the bounds of the grid
+        # for move in potential_moves:
+        #     row, col = move
+        #     # if row > 2 or col > 2 or row < 0 or col < 0:
+        #     #             #     potential_moves.remove(move)
+        #     if row > 2:
+        #         potential_moves.remove(move)
+
+        # for move in potential_moves:
+        #     if col > 2:
+        #         potential_moves.remove(move)
+        #     if row > 2:
+        #         potential_moves.remove(move)
+        #     if col < 0:
+        #         potential_moves.remove(move)
+        #     if row < 0:
+        #         potential_moves.remove(move)
+        # Generate all the valid grid configurations after the valid moves are applied and append them to
+        # the successor list
+        successors = []
+        # for move in potential_moves:
+        #     if self.parent_node and move == self.parent_node.blank_pos:
+        #         potential_moves.remove(move)
+        #     else:
+        #         if move == right:
+        #             successors.append(self.create_successor(move, right_str))
+        #         elif move == down:
+        #             successors.append(self.create_successor(move, down_str))
+        #         elif move == left:
+        #             successors.append(self.create_successor(move, left_str))
+        #         else:
+        #             successors.append(self.create_successor(move, up_str))
+
+        for move in potential_moves:
+            if move == right:
+                successors.append(self.create_successor(move, right_str))
+            elif move == down:
+                successors.append(self.create_successor(move, down_str))
+            elif move == left:
+                successors.append(self.create_successor(move, left_str))
+            else:
+                successors.append(self.create_successor(move, up_str))
+
+        for successor in successors:
+            if self.parent_node:
+                if successor.curr_grid == self.parent_node.curr_grid:
+                    successors.remove(successor)
         return successors
 
     def create_successor(self, new_blank_pos: tuple, move_str: str):

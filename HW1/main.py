@@ -120,7 +120,7 @@ def a_star_search(start_grid: dict, use_manhattan: bool):
 
             closed_list.append(best_node)
 
-            successors = best_node.generate_successors()
+            successors = best_node.generate_successors_a_star()
             for successor in successors:
                 match_in_closed = find_matching_node(successor, closed_list)
                 match_in_open = find_matching_node(successor, open_list.p_queue)
@@ -168,7 +168,7 @@ def a_star_search(start_grid: dict, use_manhattan: bool):
 
 def branch_and_bound_search(start_grid, use_manhattan):
     p_queue = PriorityQueue()
-    root = Node(start_grid, goal_grid, use_manhattan)
+    root = Node(start_grid, goal_grid, use_manhattan,'')
     p_queue.insert(root)
     L = sys.maxsize
     while p_queue.size() > 0:
@@ -179,7 +179,7 @@ def branch_and_bound_search(start_grid, use_manhattan):
             L = min_node.g if min_node.g < L else L
             trace_and_print(root, min_node)
         else:
-            successors = min_node.generate_successors()
+            successors = min_node.generate_successors_branch_and_bound()
 
             for successor in successors:
                 if successor.f <= L:
@@ -194,7 +194,7 @@ def main():
     #       "place "
     #       "(not counting the blank).")
     # print("easy grid")
-    # a_star_search(easy_grid, False)
+    # a_star_search(start_grid=easy_grid, use_manhattan=False)
     # print("medium grid")
     # a_star_search(medium_grid, False)
     # print("hard grid")
@@ -205,8 +205,8 @@ def main():
     # print(
     #     "2. A* search using the heuristic function f*(n) = g(n) + h*(n), where h*(n) is the number of tiles out of "
     #     "place")
-    print("easy grid")
-    a_star_search(start_grid=easy_grid, use_manhattan=True)
+    # print("easy grid")
+    # a_star_search(start_grid=easy_grid, use_manhattan=True)
     # print("medium grid")
     # a_star_search(start_grid=medium_grid, use_manhattan=True)
     # print("hard grid")
@@ -214,6 +214,10 @@ def main():
     # print("worst grid")
     # a_star_search(worst_grid, True)
     # branch_and_bound_search(easy_grid, True)
+
+   print("easy grid")
+   print(branch_and_bound_search(start_grid=easy_grid,use_manhattan=True))
+
 
 
 if __name__ == '__main__':
