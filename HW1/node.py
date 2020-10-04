@@ -1,11 +1,12 @@
 import numpy as np
 from typing import List
+
 blank = 0
 
 
 class Node:
 
-    def __init__(self, curr_grid: dict, goal_grid: dict, use_manhattan: bool, parent_node=None):
+    def __init__(self, curr_grid: dict, goal_grid: dict, use_manhattan: bool, move_str: str, parent_node=None):
         """
         Constructor for state in 8 puzzle
         :param curr_grid: 3x3 dictionary with key the number and value the tuple for coordinates in the grid
@@ -17,7 +18,7 @@ class Node:
         self.goal_grid = goal_grid
         self.use_manhattan = use_manhattan
         self.parent_node = parent_node
-        self.move_type = ''
+        self.move_str = move_str
         # If the current node has a parent, calculate g,h, and f. Else, initialize f,g, and h to 0
         if self.parent_node is not None:
             self.g = parent_node.g + 1
@@ -59,7 +60,7 @@ class Node:
                 total_manhattan_distance += (
 
                         abs(self.curr_grid[num][0] - self.goal_grid[num][0]) + (abs(self.curr_grid[num][1] -
-                                                                                            self.goal_grid[num][1])))
+                                                                                    self.goal_grid[num][1])))
 
         return total_manhattan_distance
 
@@ -76,9 +77,14 @@ class Node:
         left = (row, col - 1)
         up = (row - 1, col)
 
+        right_str = 'right ' + str(self.blank_pos) + "->" + str(right)
+        down_str = 'down ' + str(self.blank_pos) + "->" + str(down)
+        left_str = 'left ' + str(self.blank_pos) + "->" + str(left)
+        up_str = 'up ' + str(self.blank_pos) + "->" + str(up)
         potential_moves = [right, down, left, up]
 
         # A column value of 3 is illegal for a right move
+
         if right[1] > 2:
             potential_moves.remove(right)
 
@@ -115,11 +121,18 @@ class Node:
         # the successor list
         successors = []
         for move in potential_moves:
-            successors.append(self.create_successor(move))
+            if move == right:
+                successors.append(self.create_successor(move, right_str))
+            if move == down:
+                successors.append(self.create_successor(move, down_str))
+            if move == left:
+                successors.append(self.create_successor(move, left_str))
+            if move == up:
+                successors.append(self.create_successor(move, up_str))
 
         return successors
 
-    def create_successor(self, new_blank_pos: tuple):
+    def create_successor(self, new_blank_pos: tuple, move_str: str):
         """
         This method creates a new node containing the grid configuration reflecting the blank tile move.
         This involves swapping the blank tile with the adjacent tile
@@ -141,7 +154,8 @@ class Node:
         # Set the position of the replaced number to the old position of the blank
 
         new_grid[tile_to_replace] = self.blank_pos
-        return Node(new_grid, self.goal_grid, self.use_manhattan, self)
+        # return Node(new_grid, self.goal_grid, self.use_manhattan, self, new_blank_pos[1])
+        return Node(new_grid, self.goal_grid, self.use_manhattan, move_str, self)
 
     def __repr__(self):
         """
