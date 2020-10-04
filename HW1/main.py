@@ -56,7 +56,7 @@ worst_grid = {
 
 
 # todo: reimplement
-def find_matching_node(node: Node, node_list: List[Node]) -> Node:
+def find_matching_node(node: Node, node_list: [Node]) -> Node:
     """
     This function attempts to find the first node with a matching grid. In anticipation of duplicates,
     this function breaks after the first match, ignoring all others.
@@ -64,12 +64,21 @@ def find_matching_node(node: Node, node_list: List[Node]) -> Node:
     :type node: Node
     :return match or None
     """
-    match = None
-    for item in node_list:
-        if node.curr_grid == item.curr_grid:
-            match = item
-            break
-    return match
+    # match = None
+    # for item in node_list:
+    #     if node.curr_grid == item.curr_grid:
+    #         match = item
+    #         break
+    # return match
+
+    # matching_items = []
+    # for item in node_list:
+    #     if node.curr_grid == item.curr_grid:
+    #         matching_items.append(item)
+    pass
+    # print(len(matching_items))
+
+
 
 
 def trace_and_print(start_grid: Node, best_node: Node):
@@ -96,7 +105,7 @@ def a_star_search(start_grid: dict, use_manhattan: bool):
     '''
     Create the closed list of nodes, initially empty
     '''
-    closed_list = []
+    closed_list = set()
     reached_goal_state = False
     while open_list.size() > 0:
         # open_list.print_queue()
@@ -118,9 +127,10 @@ def a_star_search(start_grid: dict, use_manhattan: bool):
             break
         else:
 
-            closed_list.append(best_node)
+            closed_list.add(best_node)
 
-            successors = best_node.generate_successors_a_star()
+            # successors = best_node.generate_successors_a_star()
+            successors = best_node.generate_successors_branch_and_bound()
             for successor in successors:
                 match_in_closed = find_matching_node(successor, closed_list)
                 match_in_open = find_matching_node(successor, open_list.p_queue)
@@ -166,18 +176,20 @@ def a_star_search(start_grid: dict, use_manhattan: bool):
 #         print("Failed to reach goal")
 
 
-def branch_and_bound_search(start_grid, use_manhattan):
+def branch_and_bound_search(start_grid, use_manhattan, L=sys.maxsize):
     p_queue = PriorityQueue()
     root = Node(start_grid, goal_grid, use_manhattan,'')
     p_queue.insert(root)
-    L = sys.maxsize
+    # L = sys.maxsize
+    min_node = None
     while p_queue.size() > 0:
         min_node = p_queue.delete()
         if min_node.f >= L:
             continue
         elif min_node.curr_grid == goal_grid:
-            L = min_node.g if min_node.g < L else L
-            trace_and_print(root, min_node)
+            if min_node.f < L:
+                L = min_node.f
+                # trace_and_print(root, min_node)
         else:
             successors = min_node.generate_successors_branch_and_bound()
 
@@ -185,8 +197,16 @@ def branch_and_bound_search(start_grid, use_manhattan):
                 if successor.f <= L:
                     p_queue.insert(successor)
 
+    trace_and_print(root, min_node)
 
-# def iterative_deepening_a_star_search(start_grid, use_manhattan):
+
+def iterative_deepening_a_star_search(start_grid, use_manhattan):
+    root = Node(curr_grid=start_grid, goal_grid=goal_grid, use_manhattan= use_manhattan, move_str='')
+    limit = root.f
+    goal_found = False
+    while not goal_found:
+        branch_and_bound_search(limit)
+
 
 
 def main():
@@ -215,9 +235,22 @@ def main():
     # a_star_search(worst_grid, True)
     # branch_and_bound_search(easy_grid, True)
 
-   print("easy grid")
-   print(branch_and_bound_search(start_grid=easy_grid,use_manhattan=True))
+    # print("worst grid a star")
+    # a_star_search(start_grid=worst_grid,use_manhattan=True)
 
+    # print("easy grid branch and bound")
+    # branch_and_bound_search(start_grid=easy_grid,use_manhattan=True)
+    # print("medium grid branch and bound")
+    # branch_and_bound_search(start_grid=medium_grid, use_manhattan=True)
+    # print("hard grid branch and bound")
+    # branch_and_bound_search(start_grid=hard_grid, use_manhattan=True)
+    # print("worst grid branch and bound")
+    # branch_and_bound_search(start_grid=worst_grid, use_manhattan=True)
+    # print("easy grid a star")
+    # a_star_search(start_grid=easy_grid, use_manhattan=True)
+
+    print("Branch and bound easy")
+    branch_and_bound_search(start_grid=worst_grid,use_manhattan=True)
 
 
 if __name__ == '__main__':
