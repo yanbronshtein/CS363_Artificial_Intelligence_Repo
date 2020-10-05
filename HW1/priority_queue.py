@@ -1,3 +1,5 @@
+from typing import List
+
 from node import Node
 
 
@@ -56,3 +58,9 @@ class PriorityQueue:
             print(elem)
 
         print("queue end")
+
+    def has_node(self,node:Node):
+        for elem in self.p_queue:
+            if node.curr_grid == elem.curr_grid:
+                return True
+        return False

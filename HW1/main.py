@@ -79,6 +79,67 @@ def trace_and_print(start_node: Node, result: Node, num_nodes_expanded, exec_tim
     print(exec_time_str)
 
 
+# def a_star_search(start_grid: dict, use_manhattan):
+#     """
+#     Create open list of nodes, initially containing only starting node
+#     """
+#     start_time = time.perf_counter()
+#     num_nodes_expanded = 0
+#
+#     open_list = PriorityQueue()
+#     root = Node(start_grid, goal_grid, use_manhattan)
+#     open_list.insert(root)
+#
+#     '''
+#     Create the closed list of nodes, initially empty
+#     '''
+#     closed_list = dict()
+#     seen_node = dict()
+#     seen_node[str(root)] = root
+#     while open_list.size() > 0:
+#         '''
+#         Consider the best node in the open list (the node with the lowest f value)
+#         '''
+#         num_nodes_expanded += 1
+#         current_node = open_list.delete()
+#         closed_list[str(current_node)] = current_node
+#         if current_node.h == 0:
+#             """
+#             – 4. If n is a goal node exit successfully with a solution path obtained by
+#             tracing back the root, best_node, num_nodes_expanded)
+#             return best_node pointers from n to s.
+#             """
+#             end_time = time.perf_counter()
+#             exec_time = end_time - start_time
+#             exec_time_str = f'Execution Time: {exec_time:0.4f} seconds'
+#
+#             trace_and_print(root, current_node, num_nodes_expanded, exec_time_str)
+#             return
+#         else:
+#
+#             successors = current_node.generate_successors()
+#             for successor in successors:
+#                 temp_node = seen_node[str(successor)]
+#                 # match_in_closed = find_matching_node(successor, closed_list)
+#
+#                 # if match_in_closed is not None and best_node.g < match_in_closed.g:
+#                 if str(successor) in closed_list and successor.g < closed_list[str(successor)].g:
+#                     temp_successor = closed_list[str(successor)]
+#                     if successor.g < temp_successor.g:
+#                         temp_successor.g = successor.g
+#                         temp_successor.parent_node = current_node
+#                         closed_list.pop(str(successor))
+#                         open_list.insert(temp_successor)
+#
+#                     elif open_list.has_node(temp_node):
+#                         if successor.g < temp_successor.g:
+#                             temp_successor.g = successor.g
+#                             temp_successor.parent_node = current_node
+#                     else:
+#                         open_list.insert(successor)
+
+
+
 def a_star_search(start_grid: dict, use_manhattan):
     """
     Create open list of nodes, initially containing only starting node
@@ -137,9 +198,6 @@ def a_star_search(start_grid: dict, use_manhattan):
                 else:
                     open_list.insert(successor)
 
-
-
-#todo: might need to change what I pass here
 def depth_first_branch_and_bound_search(start_grid, use_manhattan, called_by_ida:bool):
     limit = INFINITY
     open_list = PriorityQueue()
@@ -172,11 +230,8 @@ def depth_first_branch_and_bound_search(start_grid, use_manhattan, called_by_ida
             while temp_list.size() > 0:
                 open_list.insert(temp_list.delete())
 
-    if called_by_ida:
-        return result_node
-    else:
-        trace_and_print(root, result_node, num_nodes_expanded,exec_time_str)
-    # trace_and_print(root, min_node)
+
+    trace_and_print(root, result_node, num_nodes_expanded,exec_time_str)
 
 
 
@@ -230,10 +285,13 @@ def main():
     # print("LEVEL:HARD")
     # a_star_search(start_grid=hard_grid, use_manhattan=False)
     # print("LEVEL:WORST")
-    # a_star_search(start_grid=worst_grid, use_manhattan=False)
+    a_star_search(start_grid=easy_grid, use_manhattan=False)
     # a_star_search(start_grid=worst_grid, use_manhattan=True)
     # depth_first_branch_and_bound_search(start_grid=worst_grid, use_manhattan=True,called_by_ida=False)
     # branch_and_bound_search(start_grid=easy_grid,use_manhattan=True)
-    iterative_deepening_a_star_search(start_grid=worst_grid,use_manhattan=True)
+    # iterative_deepening_a_star_search(start_grid=worst_grid,use_manhattan=True)
+
+    # node_str = str(Node(curr_grid=easy_grid,goal_grid=goal_grid,use_manhattan=True, move_str=''))
+    # print(node_str)
 if __name__ == '__main__':
     main()

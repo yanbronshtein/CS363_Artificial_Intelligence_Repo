@@ -165,7 +165,7 @@ class Node:
         """
         n = 3
         # arr = []
-        arr: List[int] = [0] * n
+        arr: List[int][int] = [0] * n
         for i in range(3):
             arr[i] = [0] * n
 
