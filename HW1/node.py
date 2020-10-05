@@ -6,7 +6,7 @@ blank = 0
 
 class Node:
 
-    def __init__(self, curr_grid: dict, goal_grid: dict, use_manhattan: bool, move_str: str, parent_node=None):
+    def __init__(self, curr_grid: dict, goal_grid=None, use_manhattan=None, move_str=None, parent_node=None):
         """
         Constructor for state in 8 puzzle
         :param curr_grid: 3x3 dictionary with key the number and value the tuple for coordinates in the grid
@@ -23,7 +23,6 @@ class Node:
         self.g = parent_node.g + 1 if self.parent_node is not None else 0
         self.h = self.calc_manhattan_heuristic() if self.use_manhattan else self.calc_misplaced_tiles_heuristic()
         self.f = self.g + self.h
-
 
     def calc_misplaced_tiles_heuristic(self) -> int:
         """
@@ -163,7 +162,6 @@ class Node:
         # A row value of -1 is illegal for an up move
         if up[0] < 0:
             potential_moves.remove(up)
-
 
         # Remove moves that result in the tile moving out of the bounds of the grid
         # for move in potential_moves:
