@@ -138,29 +138,6 @@ def a_star_search(start_grid: dict, use_manhattan):
                     open_list.insert(successor)
 
 
-# def depth_first_branch_and_bound_search(start_grid, use_manhattan, limit=INFINITY):
-#     p_queue = PriorityQueue()
-#     root = Node(start_grid, goal_grid, use_manhattan, '')
-#     p_queue.insert(root)
-#     result_node = None
-#     min_node = None
-#     while p_queue.size() > 0:
-#         min_node = p_queue.delete()
-#         if min_node.f >= limit:
-#             continue
-#         elif min_node.curr_grid == goal_grid:
-#             if min_node.f < limit:
-#                 limit = min_node.f
-#                 # trace_and_print(root, min_node)
-#         else:
-#             successors = min_node.generate_successors()
-#
-#             for successor in successors:
-#                 if successor.f <= limit:
-#                     p_queue.insert(successor)
-#
-#     return (min_node, limit)
-#     # trace_and_print(root, min_node)
 
 #todo: might need to change what I pass here
 def depth_first_branch_and_bound_search(start_grid, use_manhattan, called_by_ida:bool):
@@ -202,34 +179,44 @@ def depth_first_branch_and_bound_search(start_grid, use_manhattan, called_by_ida
     # trace_and_print(root, min_node)
 
 
-def branch_and_bound_search(start_grid, use_manhattan):
-    p_queue = PriorityQueue()
-    root = Node(start_grid, goal_grid, use_manhattan)
-    p_queue.insert(root)
 
-    result = None
-    while p_queue.size() > 0:
-        min_node = p_queue.delete()
-        if min_node.curr_grid == goal_grid:
-            trace_and_print(min_node)
-            break
-
-        successors = min_node.generate_successors()
-        for successor in successors:
-            p_queue.insert(successor)
 
 def iterative_deepening_a_star_search(start_grid, use_manhattan):
     root = Node(curr_grid=start_grid, goal_grid=goal_grid, use_manhattan=use_manhattan, move_str='')
     limit = root.f
-    goal_found = False
-    closed_list = []
-    result = None
-    while True:
-        closed_list.append(root)
-        new_limit = INFINITY
-        result = depth_first_branch_and_bound_search(start_grid, use_manhattan,
-                                                     limit)  # this returns a tuple: (node, new_limit)
-        new_limit = result[1]
+    goal_node_found = None
+    num_nodes_expanded = 0
+    start_time = time.perf_counter()
+    exec_time_str = ''
+
+    while goal_node_found is None:
+        evaluated_weight = INFINITY
+        open_list = PriorityQueue()
+        open_list.insert(root)
+        while open_list.size() > 0:
+            num_nodes_expanded += 1
+            current_node = open_list.delete()
+            if current_node.h == 0 and current_node.f <= limit:
+                end_time = time.perf_counter()
+                exec_time = end_time - start_time
+                exec_time_str = f'Execution Time: {exec_time:0.4f} seconds'
+                limit = current_node.f
+                goal_node_found = current_node
+            else:
+                successors = current_node.generate_successors()
+                temp_list = PriorityQueue()
+                for successor in successors:
+                    if successor.f <= limit:
+                        temp_list.insert(successor)
+                    elif evaluated_weight > successor.f:
+                        evaluated_weight = successor.f
+                while temp_list.size() > 0:
+                    open_list.insert(temp_list.delete())
+
+        limit = evaluated_weight
+    trace_and_print(root, goal_node_found,num_nodes_expanded,exec_time_str)
+
+
 
 
 def main():
@@ -245,9 +232,8 @@ def main():
     # print("LEVEL:WORST")
     # a_star_search(start_grid=worst_grid, use_manhattan=False)
     # a_star_search(start_grid=worst_grid, use_manhattan=True)
-    depth_first_branch_and_bound_search(start_grid=easy_grid, use_manhattan=True,called_by_ida=False)
-
+    # depth_first_branch_and_bound_search(start_grid=worst_grid, use_manhattan=True,called_by_ida=False)
     # branch_and_bound_search(start_grid=easy_grid,use_manhattan=True)
-
+    iterative_deepening_a_star_search(start_grid=worst_grid,use_manhattan=True)
 if __name__ == '__main__':
     main()
