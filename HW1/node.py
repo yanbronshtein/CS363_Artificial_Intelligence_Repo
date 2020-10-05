@@ -1,6 +1,3 @@
-import numpy as np
-from typing import List
-
 blank = 0
 
 
@@ -59,7 +56,7 @@ class Node:
 
         return total_manhattan_distance
 
-    def generate_successors_a_star(self):
+    def generate_successors(self):
         """
         This method generates all possible moves for the blank tile
         :return: A list of Node objects representing the resulting grids after the available moves are applied
@@ -79,7 +76,6 @@ class Node:
         potential_moves = [right, down, left, up]
 
         # A column value of 3 is illegal for a right move
-
         if right[1] > 2:
             potential_moves.remove(right)
 
@@ -95,106 +91,10 @@ class Node:
         if up[0] < 0:
             potential_moves.remove(up)
 
-        # Remove moves that result in the tile moving out of the bounds of the grid
-        # for move in potential_moves:
-        #     row, col = move
-        #     # if row > 2 or col > 2 or row < 0 or col < 0:
-        #     #             #     potential_moves.remove(move)
-        #     if row > 2:
-        #         potential_moves.remove(move)
 
-        # for move in potential_moves:
-        #     if col > 2:
-        #         potential_moves.remove(move)
-        #     if row > 2:
-        #         potential_moves.remove(move)
-        #     if col < 0:
-        #         potential_moves.remove(move)
-        #     if row < 0:
-        #         potential_moves.remove(move)
         # Generate all the valid grid configurations after the valid moves are applied and append them to
         # the successor list
         successors = []
-        for move in potential_moves:
-            if move == right:
-                successors.append(self.create_successor(move, right_str))
-            if move == down:
-                successors.append(self.create_successor(move, down_str))
-            if move == left:
-                successors.append(self.create_successor(move, left_str))
-            if move == up:
-                successors.append(self.create_successor(move, up_str))
-
-        return successors
-
-    def generate_successors_branch_and_bound(self):
-        """
-        This method generates all possible moves for the blank tile
-        :return: A list of Node objects representing the resulting grids after the available moves are applied
-        """
-
-        row, col = self.blank_pos
-        # Definition of moves available.
-        right = (row, col + 1)
-        down = (row + 1, col)
-        left = (row, col - 1)
-        up = (row - 1, col)
-
-        right_str = 'right ' + str(self.blank_pos) + "->" + str(right)
-        down_str = 'down ' + str(self.blank_pos) + "->" + str(down)
-        left_str = 'left ' + str(self.blank_pos) + "->" + str(left)
-        up_str = 'up ' + str(self.blank_pos) + "->" + str(up)
-        potential_moves = [right, down, left, up]
-
-        # A column value of 3 is illegal for a right move
-
-        if right[1] > 2:
-            potential_moves.remove(right)
-
-        # A row value of 3 is illegal for a down move
-        if down[0] > 2:
-            potential_moves.remove(down)
-
-        # A column value of -1 is illegal for a left move
-        if left[1] < 0:
-            potential_moves.remove(left)
-
-        # A row value of -1 is illegal for an up move
-        if up[0] < 0:
-            potential_moves.remove(up)
-
-        # Remove moves that result in the tile moving out of the bounds of the grid
-        # for move in potential_moves:
-        #     row, col = move
-        #     # if row > 2 or col > 2 or row < 0 or col < 0:
-        #     #             #     potential_moves.remove(move)
-        #     if row > 2:
-        #         potential_moves.remove(move)
-
-        # for move in potential_moves:
-        #     if col > 2:
-        #         potential_moves.remove(move)
-        #     if row > 2:
-        #         potential_moves.remove(move)
-        #     if col < 0:
-        #         potential_moves.remove(move)
-        #     if row < 0:
-        #         potential_moves.remove(move)
-        # Generate all the valid grid configurations after the valid moves are applied and append them to
-        # the successor list
-        successors = []
-        # for move in potential_moves:
-        #     if self.parent_node and move == self.parent_node.blank_pos:
-        #         potential_moves.remove(move)
-        #     else:
-        #         if move == right:
-        #             successors.append(self.create_successor(move, right_str))
-        #         elif move == down:
-        #             successors.append(self.create_successor(move, down_str))
-        #         elif move == left:
-        #             successors.append(self.create_successor(move, left_str))
-        #         else:
-        #             successors.append(self.create_successor(move, up_str))
 
         for move in potential_moves:
             if move == right:
@@ -216,14 +116,14 @@ class Node:
         """
         This method creates a new node containing the grid configuration reflecting the blank tile move.
         This involves swapping the blank tile with the adjacent tile
+        :param move_str: String that represents move change: {right,down,left,up} (x1,y1)->(x2,y2)
         :param new_blank_pos: tuple containing the new coordinates of the blank tile
         :return: Node containing the new grid configuration
         """
         # Determine the number currently located in the desired position of the blank tile
         tile_to_replace = -1
         new_grid = self.curr_grid.copy()
-        # print("Inside create successor. new_blank_pos")
-        # print(new_blank_pos)
+
         for key in new_grid:
             if new_grid[key] == new_blank_pos:
                 tile_to_replace = key
@@ -234,23 +134,46 @@ class Node:
         # Set the position of the replaced number to the old position of the blank
 
         new_grid[tile_to_replace] = self.blank_pos
-        # return Node(new_grid, self.goal_grid, self.use_manhattan, self, new_blank_pos[1])
         return Node(new_grid, self.goal_grid, self.use_manhattan, move_str, self)
+
+    # def __repr__(self):
+    #     """
+    #     Generates the string representation of the Node object grid for printing purposes
+    #     :return: string representation
+    #     """
+    #     arr = np.empty([3, 3], np.int)
+    #     for num in self.curr_grid:
+    #         row, col = self.curr_grid[num]
+    #         arr[row, col] = num
+    #
+    #     return_str = ''
+    #     for i in range(3):
+    #         for j in range(3):
+    #             return_str += str(arr[i, j]) + ' '
+    #
+    #         return_str += '\n'
+    #
+    #     return return_str
+
 
     def __repr__(self):
         """
         Generates the string representation of the Node object grid for printing purposes
         :return: string representation
         """
-        arr = np.empty([3, 3], np.int)
+        n = 3
+        arr = [0] * n
+        for i in range(3):
+            arr[i] = [0] * n
+
         for num in self.curr_grid:
             row, col = self.curr_grid[num]
-            arr[row, col] = num
+            arr[row][col] = num
 
         return_str = ''
         for i in range(3):
             for j in range(3):
-                return_str += str(arr[i, j]) + ' '
+                return_str += str(arr[i][j]) + ' '
 
             return_str += '\n'
 
