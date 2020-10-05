@@ -1,3 +1,5 @@
+from typing import List
+
 blank = 0
 
 
@@ -162,7 +164,8 @@ class Node:
         :return: string representation
         """
         n = 3
-        arr = [0] * n
+        # arr = []
+        arr: List[int] = [0] * n
         for i in range(3):
             arr[i] = [0] * n
 
