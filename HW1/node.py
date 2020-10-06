@@ -4,7 +4,9 @@ blank = 0
 
 
 class Node:
-
+    """
+    This class is responsible for the state of a grid in the 8 puzzle problem
+    """
     def __init__(self, curr_grid: dict, goal_grid=None, use_manhattan=None, move_str=None, parent_node=None):
         """
         Constructor for state in 8 puzzle
@@ -93,11 +95,11 @@ class Node:
         if up[0] < 0:
             potential_moves.remove(up)
 
-
         # Generate all the valid grid configurations after the valid moves are applied and append them to
         # the successor list
         successors = []
 
+        # For each valid move, call create_successor to generate a child node
         for move in potential_moves:
             if move == right:
                 successors.append(self.create_successor(move, right_str))
@@ -108,6 +110,10 @@ class Node:
             else:
                 successors.append(self.create_successor(move, up_str))
 
+        """
+        Remove moves that bring the child back to its grandparent's state. 
+        e.g If the move that created the child was UP, the child's children will not be DOWN
+        """
         for successor in successors:
             if self.parent_node:
                 if successor.curr_grid == self.parent_node.curr_grid:
@@ -138,6 +144,10 @@ class Node:
         new_grid[tile_to_replace] = self.blank_pos
         return Node(new_grid, self.goal_grid, self.use_manhattan, move_str, self)
 
+    """
+    I was not sure if the system had numpy installed so I decided to use lists build into the standard
+    """
+
     # def __repr__(self):
     #     """
     #     Generates the string representation of the Node object grid for printing purposes
@@ -156,7 +166,6 @@ class Node:
     #         return_str += '\n'
     #
     #     return return_str
-
 
     def __repr__(self):
         """

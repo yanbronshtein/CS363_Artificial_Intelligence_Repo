@@ -4,6 +4,10 @@ from node import Node
 
 
 class PriorityQueue:
+    """
+    This class implements a priority queue that compares nodes by their f_value.
+    The queue is stored internally as a python list
+    """
 
     def __init__(self):
         """
@@ -46,20 +50,29 @@ class PriorityQueue:
 
         return self.p_queue.pop(0)
 
-    def size(self):
+    def size(self) -> int:
         """
         :return: The length of the internal list
         """
         return len(self.p_queue)
 
     def print_queue(self):
+        """
+        Utility print function
+        :return:
+        """
         print("queue start")
         for elem in self.p_queue:
             print(elem)
 
         print("queue end")
 
-    def has_node(self,node:Node):
+    def has_node(self, node: Node):
+        """
+        Determines if the priority queue contains a node by comparing the interal dictionaries
+        :param node:
+        :return:
+        """
         for elem in self.p_queue:
             if node.curr_grid == elem.curr_grid:
                 return True
