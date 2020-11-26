@@ -21,7 +21,7 @@ class Node:
         self.parent_node = parent_node
         self.move_str = move_str
         # If the current node has a parent, calculate g,h, and f. Else, initialize f,g, and h to 0
-        self.g = parent_node.g + 1 if self.parent_node is not None else 0
+        self.g = parent_node.g + 1 if self.parent_node else 0
         self.h = self.calc_manhattan_heuristic() if self.use_manhattan else self.calc_misplaced_tiles_heuristic()
         self.f = self.g + self.h
 

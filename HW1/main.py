@@ -100,7 +100,7 @@ def a_star_search_does_not_work(start_grid: dict, use_manhattan: bool):
     '''
     Create the closed list of nodes, initially empty
     '''
-    closed_list = dict()
+    closed_list = list()
     seen_node = dict()
     seen_node[str(root)] = root
     while open_list.size() > 0:
