@@ -1,9 +1,10 @@
 import zipfile
 import os
 import shutil
-
+import math
 # starting parameters
 
+iterations = 0
 
 """
 Hint: E-step of the EM algorithm is essentially estimating the probabilities of different 
@@ -29,7 +30,7 @@ P(Gender | Weight, Height) = [P(Weight|Gender) * P(Height|Gender) * P(Gender)] /
 def parse_data(filename):
     file_obj = open(filename, 'r')
     print(file_obj)
-    data_dict = {}
+    data_dict = dict()
     for line in file_obj.readlines():
         line = line.strip().split()  # Trim and tokenize line
         if line[0] == "Gender":  # Skip the first line with the labels
@@ -46,38 +47,255 @@ def parse_data(filename):
     return data_dict
 
 
-def e_step(data_dict, parameter_set):
-    for key in data_dict:
+'''
+P(G|W,H) = P(G,W,H) / P(W,H)
+P(G,W,H) = P(G)*P(W|G)*P(H|G)
+P(W,H) = SUM_OVER_G( P(G)*P(W|G)*P(H|G) ) 
+
+'''
+
+
+def e_step(theta_dict, filename):
+    data_dict = parse_data(filename)
+    expected_data_dict = data_dict.copy()
+    for entry in data_dict:
         # estimate p(gender|weight=0,height=0)
-        if key == ('-', '0', '0'):
-            pass
+        if entry == ('-', '0', '0'):
+            d = 0
+            n = theta_dict[('0', 'x', 'x')] * theta_dict[('0', '0', 'x')] * theta_dict[('0', 'x', '0')]
 
-        elif key == ('-', '0', '1'):
-            pass
+            d += theta_dict[('0', 'x', 'x')] * theta_dict[('0', '0', 'x')] * theta_dict[('0', 'x', '0')]
+            d += theta_dict[('1', 'x', 'x')] * theta_dict[('1', '0', 'x')] * theta_dict[('1', 'x', '0')]
 
-        elif key == ('-', '1', '0'):
-            pass
-        elif key == ('-', '1', '1'):
-            pass
+            if ('0', '0', '0') in expected_data_dict:
+                expected_data_dict[('0', '0', '0')] += (n / d) * expected_data_dict[('-', '0', '0')]
+            else:
+                expected_data_dict[('0', '0', '0')] = (n / d) * expected_data_dict[('-', '0', '0')]
+
+            if ('1', '0', '0') in expected_data_dict:
+                expected_data_dict[('1', '0', '0')] += (1 - (n / d)) * expected_data_dict[('-', '0', '0')]
+            else:
+                expected_data_dict[('1', '0', '0')] = (1 - (n / d)) * expected_data_dict[('-', '0', '0')]
+
+        # estimate p(gender|weight=0,height=1)
+        elif entry == ('-', '0', '1'):
+            d = 0
+            n = theta_dict[('0', 'x', 'x')] * theta_dict[('0', '0', 'x')] * theta_dict[('0', 'x', '1')]
+
+            d += theta_dict[('0', 'x', 'x')] * theta_dict[('0', '0', 'x')] * theta_dict[('0', 'x', '1')]
+            d += theta_dict[('1', 'x', 'x')] * theta_dict[('1', '0', 'x')] * theta_dict[('1', 'x', '1')]
+
+            if ('0', '0', '1') in expected_data_dict:
+                expected_data_dict[('0', '0', '1')] += (n / d) * expected_data_dict[('-', '0', '1')]
+            else:
+                expected_data_dict[('0', '0', '1')] = (n / d) * expected_data_dict[('-', '0', '1')]
+
+            if ('1', '0', '1') in expected_data_dict:
+                expected_data_dict[('1', '0', '1')] += (1 - (n / d)) * expected_data_dict[('-', '0', '1')]
+            else:
+                expected_data_dict[('1', '0', '1')] = (1 - (n / d)) * expected_data_dict[('-', '0', '1')]
+
+        # estimate p(gender|weight=1,height=0)
+        elif entry == ('-', '1', '0'):
+            d = 0
+            n = theta_dict[('0', 'x', 'x')] * theta_dict[('0', '1', 'x')] * theta_dict[('0', 'x', '0')]
+
+            d += theta_dict[('0', 'x', 'x')] * theta_dict[('0', '1', 'x')] * theta_dict[('0', 'x', '0')]
+            d += theta_dict[('1', 'x', 'x')] * theta_dict[('1', '1', 'x')] * theta_dict[('1', 'x', '0')]
+
+            if ('0', '1', '0') in expected_data_dict:
+                expected_data_dict[('0', '1', '0')] += (n / d) * expected_data_dict[('-', '1', '0')]
+            else:
+                expected_data_dict[('0', '1', '0')] = (n / d) * expected_data_dict[('-', '1', '0')]
+
+            if ('1', '1', '0') in expected_data_dict:
+                expected_data_dict[('1', '1', '0')] += (1 - (n / d)) * expected_data_dict[('-', '1', '0')]
+            else:
+                expected_data_dict[('1', '1', '0')] = (1 - (n / d)) * expected_data_dict[('-', '1', '0')]
+
+        # estimate p(gender|weight=1,height=1)
+        elif entry == ('-', '1', '1'):
+            d = 0
+            n = theta_dict[('0', 'x', 'x')] * theta_dict[('0', '1', 'x')] * theta_dict[('0', 'x', '1')]
+
+            d += theta_dict[('0', 'x', 'x')] * theta_dict[('0', '1', 'x')] * theta_dict[('0', 'x', '1')]
+            d += theta_dict[('1', 'x', 'x')] * theta_dict[('1', '1', 'x')] * theta_dict[('1', 'x', '1')]
+
+            if ('0', '1', '1') in expected_data_dict:
+                expected_data_dict[('0', '1', '1')] += (n / d) * expected_data_dict[('-', '1', '1')]
+            else:
+                expected_data_dict[('0', '1', '1')] = (n / d) * expected_data_dict[('-', '1', '1')]
+
+            if ('1', '1', '1') in expected_data_dict:
+                expected_data_dict[('1', '1', '1')] += (1 - (n / d)) * expected_data_dict[('-', '1', '1')]
+            else:
+                expected_data_dict[('1', '1', '1')] = (1 - (n / d)) * expected_data_dict[('-', '1', '1')]
+
         else:
-            raise Exception("The data", key, "is not formatted correctly")
+            # raise Exception("The entry ", entry, " is invalid")
+            continue
+    return expected_data_dict
 
 
 def theta_parameters(gender_0, weight_0_given_gender_0, weight_0_given_gender_1, height_0_given_gender_0,
                      height_0_given_gender1):
-    return {
-        ('0', 'd', 'd'): gender_0,
-        ('1', 'd', 'd'): 1 - gender_0, ('0', '0', 'd'): weight_0_given_gender_0,
-        ('0', '1', 'd'): 1 - weight_0_given_gender_0,
-        ('1', '0', 'd'): weight_0_given_gender_1,
-        ('1', '1', 'd'): 1 - weight_0_given_gender_1, ('0', 'd', '0'): height_0_given_gender_0,
-        ('0', 'd', '1'): 1 - height_0_given_gender_0,
-        ('1', 'd', '0'): height_0_given_gender1,
-        ('1', 'd', '1'): 1 - height_0_given_gender1
-    }
+    return dict({
+        ('0', 'x', 'x'): gender_0,
+        ('1', 'x', 'x'): 1 - gender_0,
+        ('0', '0', 'x'): weight_0_given_gender_0,
+        ('0', '1', 'x'): 1 - weight_0_given_gender_0,
+        ('1', '0', 'x'): weight_0_given_gender_1,
+        ('1', '1', 'x'): 1 - weight_0_given_gender_1,
+        ('0', 'x', '0'): height_0_given_gender_0,
+        ('0', 'x', '1'): 1 - height_0_given_gender_0,
+        ('1', 'x', '0'): height_0_given_gender1,
+        ('1', 'x', '1'): 1 - height_0_given_gender1
+    })
 
 
-data_dict = parse_data('hw2dataset_10.txt')
-theta = theta_parameters(gender_0=0.7, weight_0_given_gender_0=0.8,
-                         weight_0_given_gender_1=0.4, height_0_given_gender_0=0.7, height_0_given_gender1=0.3)
-e_step(data_dict=data_dict, parameter_set=theta)
+
+
+def m_step(theta_dict, filename):
+
+    global iterations
+    iterations += 1
+    new_param = dict()
+    expected_data_dict = e_step(theta_dict, filename)
+
+    # calculate p(gender=0) and p(gender=1)
+    n, d = 0, 0
+
+    for key in expected_data_dict:
+        if key[0] == '-':
+            continue
+        else:
+            d += expected_data_dict[key]
+            if key[0] == '0':
+                n += expected_data_dict[key]
+    new_param[('0', 'x', 'x')] = n / d
+    new_param[('1', 'x', 'x')] = 1 - new_param[('0', 'x', 'x')]
+
+    # calculate p(weight=0|gender=0) and p(weight=1|gender=0)
+    n, d = 0, 0
+
+    for key in expected_data_dict:
+        if key[0] == '-':
+            continue
+        else:
+            if key[0] == '0':
+                d += expected_data_dict[key]
+                if key[1] == '0':
+                    n += expected_data_dict[key]
+    new_param[('0', '0', 'x')] = n / d
+    new_param[('0', '1', 'x')] = 1 - new_param[('0', '0', 'x')]
+
+    # calculate p(weight=0|gender=1) and p(weight=1|gender=1)
+    n, d = 0, 0
+    for key in expected_data_dict:
+        if key[0] == '-':
+            continue
+        else:
+            if key[0] == '1':
+                d += expected_data_dict[key]
+                if key[1] == '0':
+                    n += expected_data_dict[key]
+    new_param[('1', '0', 'x')] = n / d
+    new_param[('1', '1', 'x')] = 1 - new_param[('1', '0', 'x')]
+
+    # calculate p(height=0|gender=0) and p(height=1|gender=0)
+    n, d = 0, 0
+    for key in expected_data_dict:
+        if key[0] == '-':
+            continue
+        else:
+            if key[0] == '0':
+                d += expected_data_dict[key]
+                if key[2] == '0':
+                    n += expected_data_dict[key]
+    new_param[('0', 'x', '0')] = n / d
+    new_param[('0', 'x', '1')] = 1 - new_param[('0', 'x', '0')]
+
+    # calculate p(height=0|gender=1) and p(height=1|gender=1)
+    n, d = 0, 0
+    for key in expected_data_dict:
+        if key[0] == '-':
+            continue
+        else:
+            if key[0] == '1':
+                d += expected_data_dict[key]
+                if key[2] == '0':
+                    n += expected_data_dict[key]
+    new_param[('1', 'x', '0')] = n / d
+    new_param[('1', 'x', '1')] = 1 - new_param[('1', 'x', '0')]
+
+    print("iteration #", iterations)
+    convergence = check_convergence(theta_dict, new_param, 0.0001)
+
+    if convergence:
+        print("Final conditional probability tables:")
+        print_conditional_prob(new_param)
+    else:
+        print("new parameters:", new_param)
+        m_step(new_param, filename)
+
+
+# def check_convergence(curr_param, new_param, threshold):
+#     print("current parameters:", curr_param)
+#     for tuple in curr_param:
+#         difference = abs(curr_param[tuple] - new_param[tuple])
+#         print("difference:", difference)
+#         if difference <= threshold:
+#             continue
+#         else:
+#             return False
+#
+#     return True
+
+
+def check_convergence(curr_param, new_param, threshold):
+    print("current parameter:", curr_param)
+    log_likelihood_curr_param, log_likelihood_new_param = 0, 0
+    for tuple in curr_param:
+        log_likelihood_curr_param += math.log(curr_param[tuple])
+    for tuple in new_param:
+        log_likelihood_new_param += math.log(new_param[tuple])
+
+    difference = log_likelihood_curr_param - log_likelihood_new_param
+    print("difference:", difference)
+
+    return difference <= threshold
+
+
+def print_conditional_prob(param_dict):
+    for key in param_dict:
+        if key[0] == '0':
+            if key[1] == '0' and key[2] == 'x':
+                print("p(weight=0|gender=0):", param_dict[('0', '0', 'x')])
+            elif key[1] == '1' and key[2] == 'x':
+                print("p(weight=1|gender=0):", param_dict[('0', '1', 'x')])
+            elif key[1] == 'x' and key[2] == '0':
+                print("p(height=0|gender=0):", param_dict[('0', 'x', '0')])
+            elif key[1] == 'x' and key[2] == '1':
+                print("p(height=1|gender=0):", param_dict[('0', 'x', '1')])
+            else:
+                print("p(gender=0):", param_dict[('0', 'x', 'x')])
+        else:
+            if key[1] == '0' and key[2] == 'x':
+                print("p(weight=0|gender=1):", param_dict[('1', '0', 'x')])
+            elif key[1] == '1' and key[2] == 'x':
+                print("p(weight=1|gender=1):", param_dict[('1', '1', 'x')])
+            elif key[1] == 'x' and key[2] == '0':
+                print("p(height=0|gender=1):", param_dict[('1', 'x', '0')])
+            elif key[1] == 'x' and key[2] == '1':
+                print("p(height=1|gender=1):", param_dict[('1', 'x', '1')])
+            else:
+                print("p(gender=1):", param_dict[('1', 'x', 'x')])
+
+
+filename1 = 'hw2dataset_30.txt'
+
+theta_dict = theta_parameters(gender_0=0.7, weight_0_given_gender_0=0.8,
+                              weight_0_given_gender_1=0.4, height_0_given_gender_0=0.7, height_0_given_gender1=0.3)
+
+# m_step(theta_dict, 0, filename1)
+m_step(theta_dict, filename1)
