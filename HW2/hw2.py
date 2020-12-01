@@ -1,10 +1,17 @@
-import zipfile
 import os
-import shutil
+import sys
 import math
+
+try:
+    import matplotlib.pyplot as plt
+except:
+    os.system("pip install matplotlib")
+
+
 # starting parameters
 
 iterations = 0
+log_likelihood_list = []
 
 """
 Hint: E-step of the EM algorithm is essentially estimating the probabilities of different 
@@ -29,7 +36,7 @@ P(Gender | Weight, Height) = [P(Weight|Gender) * P(Height|Gender) * P(Gender)] /
 # parse_data('data_assign2.zip')
 def parse_data(filename):
     file_obj = open(filename, 'r')
-    print(file_obj)
+    # print(file_obj)
     data_dict = dict()
     for line in file_obj.readlines():
         line = line.strip().split()  # Trim and tokenize line
@@ -153,10 +160,7 @@ def theta_parameters(gender_0, weight_0_given_gender_0, weight_0_given_gender_1,
     })
 
 
-
-
 def m_step(theta_dict, filename):
-
     global iterations
     iterations += 1
     new_param = dict()
@@ -228,14 +232,14 @@ def m_step(theta_dict, filename):
     new_param[('1', 'x', '0')] = n / d
     new_param[('1', 'x', '1')] = 1 - new_param[('1', 'x', '0')]
 
-    print("iteration #", iterations)
+    # print("iteration #", iterations)
     convergence = check_convergence(theta_dict, new_param, 0.0001)
 
     if convergence:
         print("Final conditional probability tables:")
-        print_conditional_prob(new_param)
+        # print_conditional_prob(new_param)
     else:
-        print("new parameters:", new_param)
+        # print("new parameters:", new_param)
         m_step(new_param, filename)
 
 
@@ -251,17 +255,24 @@ def m_step(theta_dict, filename):
 #
 #     return True
 
-
 def check_convergence(curr_param, new_param, threshold):
-    print("current parameter:", curr_param)
+    # print("current parameter:", curr_param)
+    # print("new parameter:", new_param)
     log_likelihood_curr_param, log_likelihood_new_param = 0, 0
-    for tuple in curr_param:
-        log_likelihood_curr_param += math.log(curr_param[tuple])
-    for tuple in new_param:
-        log_likelihood_new_param += math.log(new_param[tuple])
+    for key in curr_param:
+        if curr_param[key] == 0.0 or new_param[key] == 0.0:
+            continue
+        else:
+            log_likelihood_curr_param += math.log(curr_param[key])
+            log_likelihood_new_param += math.log(new_param[key])
 
-    difference = log_likelihood_curr_param - log_likelihood_new_param
-    print("difference:", difference)
+    log_likelihood_list.append(log_likelihood_new_param)
+
+    difference = abs(log_likelihood_curr_param - log_likelihood_new_param)
+    print("Log likelihood current_param", log_likelihood_curr_param)
+    print("Log likelihood new_param", log_likelihood_new_param)
+
+    print("change of log likelihood:", difference)
 
     return difference <= threshold
 
@@ -292,10 +303,31 @@ def print_conditional_prob(param_dict):
                 print("p(gender=1):", param_dict[('1', 'x', 'x')])
 
 
-filename1 = 'hw2dataset_30.txt'
+sys.setrecursionlimit(2000)
+
+filename1 = 'hw2dataset_100.txt'
 
 theta_dict = theta_parameters(gender_0=0.7, weight_0_given_gender_0=0.8,
                               weight_0_given_gender_1=0.4, height_0_given_gender_0=0.7, height_0_given_gender1=0.3)
+log_prob = 0
+for key in theta_dict:
+    log_prob += math.log(theta_dict[key])
 
+log_likelihood_list.append(log_prob)
+
+print("yoyo")
 # m_step(theta_dict, 0, filename1)
 m_step(theta_dict, filename1)
+Y = log_likelihood_list
+print(Y)
+
+# X = [i for i in range(1, len(Y) + 1)]
+# print(X)
+plt.plot(Y)
+plt.title("Yoyograph")
+plt.xlabel("#Iterations")
+plt.ylabel("Log likelihood")
+
+
+plt.show()
+print(iterations)
