@@ -7,7 +7,6 @@ try:
 except:
     os.system("pip install matplotlib")
 
-
 # starting parameters
 
 iterations = 0
@@ -65,44 +64,33 @@ P(W,H) = SUM_OVER_G( P(G)*P(W|G)*P(H|G) )
 def e_step(theta_dict, filename):
     data_dict = parse_data(filename)
     expected_data_dict = data_dict.copy()
+    # entry_options =
+    # [
+    #     ('-', '0', '0'),
+    #
+    # ]
     for entry in data_dict:
         # estimate p(gender|weight=0,height=0)
-        if entry == ('-', '0', '0'):
+
+        # estimate p(gender|weight=1,height=1)
+        if entry == ('-', '1', '1'):
             d = 0
-            n = theta_dict[('0', 'x', 'x')] * theta_dict[('0', '0', 'x')] * theta_dict[('0', 'x', '0')]
+            n = theta_dict[('0', 'x', 'x')] * theta_dict[('0', '1', 'x')] * theta_dict[('0', 'x', '1')]
 
-            d += theta_dict[('0', 'x', 'x')] * theta_dict[('0', '0', 'x')] * theta_dict[('0', 'x', '0')]
-            d += theta_dict[('1', 'x', 'x')] * theta_dict[('1', '0', 'x')] * theta_dict[('1', 'x', '0')]
+            d += theta_dict[('0', 'x', 'x')] * theta_dict[('0', '1', 'x')] * theta_dict[('0', 'x', '1')]
+            d += theta_dict[('1', 'x', 'x')] * theta_dict[('1', '1', 'x')] * theta_dict[('1', 'x', '1')]
 
-            if ('0', '0', '0') in expected_data_dict:
-                expected_data_dict[('0', '0', '0')] += (n / d) * expected_data_dict[('-', '0', '0')]
+            if ('0', '1', '1') in expected_data_dict:
+                expected_data_dict[('0', '1', '1')] += (n / d) * expected_data_dict[('-', '1', '1')]
             else:
-                expected_data_dict[('0', '0', '0')] = (n / d) * expected_data_dict[('-', '0', '0')]
+                expected_data_dict[('0', '1', '1')] = (n / d) * expected_data_dict[('-', '1', '1')]
 
-            if ('1', '0', '0') in expected_data_dict:
-                expected_data_dict[('1', '0', '0')] += (1 - (n / d)) * expected_data_dict[('-', '0', '0')]
+            if ('1', '1', '1') in expected_data_dict:
+                expected_data_dict[('1', '1', '1')] += (1 - (n / d)) * expected_data_dict[('-', '1', '1')]
             else:
-                expected_data_dict[('1', '0', '0')] = (1 - (n / d)) * expected_data_dict[('-', '0', '0')]
+                expected_data_dict[('1', '1', '1')] = (1 - (n / d)) * expected_data_dict[('-', '1', '1')]
 
-        # estimate p(gender|weight=0,height=1)
-        elif entry == ('-', '0', '1'):
-            d = 0
-            n = theta_dict[('0', 'x', 'x')] * theta_dict[('0', '0', 'x')] * theta_dict[('0', 'x', '1')]
-
-            d += theta_dict[('0', 'x', 'x')] * theta_dict[('0', '0', 'x')] * theta_dict[('0', 'x', '1')]
-            d += theta_dict[('1', 'x', 'x')] * theta_dict[('1', '0', 'x')] * theta_dict[('1', 'x', '1')]
-
-            if ('0', '0', '1') in expected_data_dict:
-                expected_data_dict[('0', '0', '1')] += (n / d) * expected_data_dict[('-', '0', '1')]
-            else:
-                expected_data_dict[('0', '0', '1')] = (n / d) * expected_data_dict[('-', '0', '1')]
-
-            if ('1', '0', '1') in expected_data_dict:
-                expected_data_dict[('1', '0', '1')] += (1 - (n / d)) * expected_data_dict[('-', '0', '1')]
-            else:
-                expected_data_dict[('1', '0', '1')] = (1 - (n / d)) * expected_data_dict[('-', '0', '1')]
-
-        # estimate p(gender|weight=1,height=0)
+                # estimate p(gender|weight=1,height=0)
         elif entry == ('-', '1', '0'):
             d = 0
             n = theta_dict[('0', 'x', 'x')] * theta_dict[('0', '1', 'x')] * theta_dict[('0', 'x', '0')]
@@ -120,23 +108,40 @@ def e_step(theta_dict, filename):
             else:
                 expected_data_dict[('1', '1', '0')] = (1 - (n / d)) * expected_data_dict[('-', '1', '0')]
 
-        # estimate p(gender|weight=1,height=1)
-        elif entry == ('-', '1', '1'):
+        elif entry == ('-', '0', '0'):
             d = 0
-            n = theta_dict[('0', 'x', 'x')] * theta_dict[('0', '1', 'x')] * theta_dict[('0', 'x', '1')]
+            n = theta_dict[('0', 'x', 'x')] * theta_dict[('0', '0', 'x')] * theta_dict[('0', 'x', '0')]
 
-            d += theta_dict[('0', 'x', 'x')] * theta_dict[('0', '1', 'x')] * theta_dict[('0', 'x', '1')]
-            d += theta_dict[('1', 'x', 'x')] * theta_dict[('1', '1', 'x')] * theta_dict[('1', 'x', '1')]
+            d += theta_dict[('0', 'x', 'x')] * theta_dict[('0', '0', 'x')] * theta_dict[('0', 'x', '0')]
+            d += theta_dict[('1', 'x', 'x')] * theta_dict[('1', '0', 'x')] * theta_dict[('1', 'x', '0')]
 
-            if ('0', '1', '1') in expected_data_dict:
-                expected_data_dict[('0', '1', '1')] += (n / d) * expected_data_dict[('-', '1', '1')]
+            if ('0', '0', '0') in expected_data_dict:
+                expected_data_dict[('0', '0', '0')] += (n / d) * expected_data_dict[('-', '0', '0')]
             else:
-                expected_data_dict[('0', '1', '1')] = (n / d) * expected_data_dict[('-', '1', '1')]
+                expected_data_dict[('0', '0', '0')] = (n / d) * expected_data_dict[('-', '0', '0')]
 
-            if ('1', '1', '1') in expected_data_dict:
-                expected_data_dict[('1', '1', '1')] += (1 - (n / d)) * expected_data_dict[('-', '1', '1')]
+            if ('1', '0', '0') in expected_data_dict:
+                expected_data_dict[('1', '0', '0')] += (1 - (n / d)) * expected_data_dict[('-', '0', '0')]
             else:
-                expected_data_dict[('1', '1', '1')] = (1 - (n / d)) * expected_data_dict[('-', '1', '1')]
+                expected_data_dict[('1', '0', '0')] = (1 - (n / d)) * expected_data_dict[('-', '0', '0')]
+
+                # estimate p(gender|weight=0,height=1)
+        elif entry == ('-', '0', '1'):
+            d = 0
+            n = theta_dict[('0', 'x', 'x')] * theta_dict[('0', '0', 'x')] * theta_dict[('0', 'x', '1')]
+
+            d += theta_dict[('0', 'x', 'x')] * theta_dict[('0', '0', 'x')] * theta_dict[('0', 'x', '1')]
+            d += theta_dict[('1', 'x', 'x')] * theta_dict[('1', '0', 'x')] * theta_dict[('1', 'x', '1')]
+
+            if ('0', '0', '1') in expected_data_dict:
+                expected_data_dict[('0', '0', '1')] += (n / d) * expected_data_dict[('-', '0', '1')]
+            else:
+                expected_data_dict[('0', '0', '1')] = (n / d) * expected_data_dict[('-', '0', '1')]
+
+            if ('1', '0', '1') in expected_data_dict:
+                expected_data_dict[('1', '0', '1')] += (1 - (n / d)) * expected_data_dict[('-', '0', '1')]
+            else:
+                expected_data_dict[('1', '0', '1')] = (1 - (n / d)) * expected_data_dict[('-', '0', '1')]
 
         else:
             # raise Exception("The entry ", entry, " is invalid")
@@ -305,7 +310,7 @@ def print_conditional_prob(param_dict):
 
 sys.setrecursionlimit(2000)
 
-filename1 = 'hw2dataset_100.txt'
+filename1 = 'hw2dataset_70.txt'
 
 theta_dict = theta_parameters(gender_0=0.7, weight_0_given_gender_0=0.8,
                               weight_0_given_gender_1=0.4, height_0_given_gender_0=0.7, height_0_given_gender1=0.3)
@@ -327,7 +332,6 @@ plt.plot(Y)
 plt.title("Yoyograph")
 plt.xlabel("#Iterations")
 plt.ylabel("Log likelihood")
-
 
 plt.show()
 print(iterations)
