@@ -225,13 +225,10 @@ class EM:
         self.log_likelihood_list.append(log_likelihood_new_param)
 
         difference = math.fabs(log_likelihood_curr_param - log_likelihood_new_param)
-        # print("Log likelihood current_param", log_likelihood_curr_param)
-        # print("Log likelihood new_param", log_likelihood_new_param)
-        #
-        # print("change of log likelihood:", difference)
-
-        return difference < threshold
-
+        if difference <= self.threshold:
+            return True
+        else:
+            return False
 
 """
 Hint: E-step of the EM algorithm is essentially estimating the probabilities of different 
@@ -244,7 +241,6 @@ P(Gender | Weight, Height) = [P(Weight|Gender) * P(Height|Gender) * P(Gender)] /
 
 def parse_data(filename):
     file_obj = open(filename, 'r')
-    # print(file_obj)
     data_dict = dict()
     for line in file_obj.readlines():
         line = line.strip().split()  # Trim and tokenize line
@@ -255,10 +251,7 @@ def parse_data(filename):
             data_dict[line_tuple] += 1
         else:
             data_dict[line_tuple] = 1
-        # data_dict[line] = 1 if line not in data_dict else data_dict[line] + 1  # Put each line as the key and the
-        # value is the frequency
 
-        # unique_vowels = {i for i in quote if i in 'aeiou'}
     return data_dict
 
 
@@ -271,7 +264,7 @@ P(W,H) = SUM_OVER_G( P(G)*P(W|G)*P(H|G) )
 
 
 def print_conditional_prob(param_dict):
-    df =
+
     for key in param_dict:
         if key[0] == '0':
             if key[1] == '0' and key[2] == 'x':
@@ -301,8 +294,8 @@ def print_conditional_prob(param_dict):
 def main():
     files = [
         'hw2dataset_10.txt',
-        'hw2dataset_30.txt'
-        'hw2dataset_50.txt'
+        'hw2dataset_30.txt',
+        'hw2dataset_50.txt',
         'hw2dataset_70.txt',
         'hw2dataset_100.txt'
 
@@ -311,25 +304,25 @@ def main():
     em_10_percent = EM(gender_0=0.7, weight_0_given_gender_0=0.8,
                        weight_0_given_gender_1=0.4, height_0_given_gender_0=0.7, height_0_given_gender1=0.3,
                        filename=files[0], threshold=0.0001)
-    print(em_10_percent.iterations)
-    # em_30_percent = EM(gender_0=0.7, weight_0_given_gender_0=0.8,
-    #                    weight_0_given_gender_1=0.4, height_0_given_gender_0=0.7, height_0_given_gender1=0.3,
-    #                    filename=files[1])
+    em_30_percent = EM(gender_0=0.7, weight_0_given_gender_0=0.8,
+                       weight_0_given_gender_1=0.4, height_0_given_gender_0=0.7, height_0_given_gender1=0.3,
+                       filename=files[1], threshold=0.0001)
+
     #
-    # em_50_percent = EM(gender_0=0.7, weight_0_given_gender_0=0.8,
-    #                    weight_0_given_gender_1=0.4, height_0_given_gender_0=0.7, height_0_given_gender1=0.3,
-    #                    filename=files[2])
+    em_50_percent = EM(gender_0=0.7, weight_0_given_gender_0=0.8,
+                       weight_0_given_gender_1=0.4, height_0_given_gender_0=0.7, height_0_given_gender1=0.3,
+                       filename=files[2], threshold=0.0001)
+
     #
-    # em_70_percent = EM(gender_0=0.7, weight_0_given_gender_0=0.8,
-    #                    weight_0_given_gender_1=0.4, height_0_given_gender_0=0.7, height_0_given_gender1=0.3,
-    #                    filename=files[3])
+    em_70_percent = EM(gender_0=0.7, weight_0_given_gender_0=0.8,
+                       weight_0_given_gender_1=0.4, height_0_given_gender_0=0.7, height_0_given_gender1=0.3,
+                       filename=files[3], threshold=0.0001)
     #
-    # em_100_percent = EM(gender_0=0.7, weight_0_given_gender_0=0.8,
-    #                     weight_0_given_gender_1=0.4, height_0_given_gender_0=0.7, height_0_given_gender1=0.3,
-    #                     filename=files[4])
-    #
-    # Y = em_10_percent.log_likelihood_list
-    # print(Y)
+    em_100_percent = EM(gender_0=0.7, weight_0_given_gender_0=0.8,
+                        weight_0_given_gender_1=0.4, height_0_given_gender_0=0.7, height_0_given_gender1=0.3,
+                        filename=files[4], threshold=0.0001)
+
+
 
     # plt.plot(Y)
     # plt.title("Yoyograph")
