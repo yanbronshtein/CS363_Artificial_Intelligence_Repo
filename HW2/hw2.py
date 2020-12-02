@@ -29,11 +29,11 @@ class EM:
                  height_0_given_gender1, filename: str, threshold):
         """
         Default constructor for EM class
-        :param gender_0:  P(gender=0)
-        :param weight_0_given_gender_0: P(weight=0|gender=0)
-        :param weight_0_given_gender_1: P(weight=0|gender=1)
-        :param height_0_given_gender_0: P(height=0|gender=0)
-        :param height_0_given_gender1: P(height=0|gender=1)
+        :param gender_0:  P(Gender=0)
+        :param weight_0_given_gender_0: P(Weight=0|Gender=0)
+        :param weight_0_given_gender_1: P(Weight=0|Gender=1)
+        :param height_0_given_gender_0: P(height=0|Gender=0)
+        :param height_0_given_gender1: P(height=0|Gender=1)
         :param filename: File of this form:"hw2dataset_{%missing_data}.txt"
         :param threshold: Threshold for convergence
         """
@@ -141,7 +141,7 @@ class EM:
         ]
 
         for entry in data_dict:
-            # estimate p(gender|weight=1,height=1)
+            # estimate p(gender|Weight=1,Height=1)
             if entry == entry_options[0]:
                 d = 0
                 n = theta_dict[('0', 'x', 'x')] * theta_dict[('0', '1', 'x')] * theta_dict[('0', 'x', '1')]
@@ -323,26 +323,25 @@ class EM:
         print("filename:", self.filename)
         print("total iterations:", self.iterations)
         print("----------------------------------------Gender Table----------------------------------------")
-        gender_df["P(gender=0)"] = [param_dict[('0', 'x', 'x')]]
-        gender_df["P(gender=1)"] = [param_dict[('1', 'x', 'x')]]
+        gender_df["P(Gender=0)"] = [param_dict[('0', 'x', 'x')]]
+        gender_df["P(Gender=1)"] = [param_dict[('1', 'x', 'x')]]
         print(gender_df.to_string(index=False))
         print("--------------------------------------------------------------------------------------------")
         print("----------------------------------------Weight|Gender Table---------------------------------")
 
-        weight_given_gender_df["P(weight=0|gender=0)"] = [param_dict[('0', '0', 'x')]]
-        weight_given_gender_df["P(weight=1|gender=0)"] = [param_dict[('0', '1', 'x')]]
-        weight_given_gender_df["P(weight=0|gender=1)"] = [param_dict[('1', '0', 'x')]]
-        weight_given_gender_df["P(weight=1|gender=0)"] = [param_dict[('1', '1', 'x')]] if param_dict[(
-            '0', '0', 'x')] != 0 else ["Blah"]
+        weight_given_gender_df["P(Weight=0|Gender=0)"] = [param_dict[('0', '0', 'x')]]
+        weight_given_gender_df["P(Weight=1|Gender=0)"] = [param_dict[('0', '1', 'x')]]
+        weight_given_gender_df["P(Weight=0|Gender=1)"] = [param_dict[('1', '0', 'x')]]
+        weight_given_gender_df["P(Weight=1|Gender=1)"] = [param_dict[('1', '1', 'x')]]
         print(weight_given_gender_df.to_string(index=False))
         print("--------------------------------------------------------------------------------------------")
 
         print("----------------------------------------Height|Gender Table---------------------------------")
 
-        height_given_gender_df["P(height=0|gender=0)"] = [param_dict[('0', 'x', '0')]]
-        height_given_gender_df["P(height=1|gender=0)"] = [param_dict[('0', 'x', '1')]]
-        height_given_gender_df["P(height=0|gender=1)"] = [param_dict[('1', 'x', '0')]]
-        height_given_gender_df["P(height=1|gender=1)"] = [param_dict[('1', 'x', '1')]]
+        height_given_gender_df["P(Height=0|Gender=0)"] = [param_dict[('0', 'x', '0')]]
+        height_given_gender_df["P(Height=1|Gender=0)"] = [param_dict[('0', 'x', '1')]]
+        height_given_gender_df["P(Height=0|Gender=1)"] = [param_dict[('1', 'x', '0')]]
+        height_given_gender_df["P(Height=1|Gender=1)"] = [param_dict[('1', 'x', '1')]]
         print(height_given_gender_df.to_string(index=False))
 
         print(
@@ -350,12 +349,12 @@ class EM:
         self.generate_graph()
 
     def generate_graph(self):
-        plt.plot(self.log_likelihood_list, color='magenta', marker='o')
-        plt.title(self.filename)
-        plt.xlabel("#Iterations")
-        plt.ylabel("Log likelihood")
-        plt.show()
-
+        # plt.plot(self.log_likelihood_list, color='magenta', marker='o')
+        # plt.title(self.filename)
+        # plt.xlabel("#Iterations")
+        # plt.ylabel("Log likelihood")
+        # plt.show()
+        pass
 
 """
 Hint: E-step of the EM algorithm is essentially estimating the probabilities of different 
@@ -395,22 +394,22 @@ def main():
     em_10_percent = EM(gender_0=0.7, weight_0_given_gender_0=0.8,
                        weight_0_given_gender_1=0.4, height_0_given_gender_0=0.7, height_0_given_gender1=0.3,
                        filename=files[0], threshold=0.0001)
-    em_30_percent = EM(gender_0=0.7, weight_0_given_gender_0=0.8,
-                       weight_0_given_gender_1=0.4, height_0_given_gender_0=0.7, height_0_given_gender1=0.3,
-                       filename=files[1], threshold=0.0001)
-
-    em_50_percent = EM(gender_0=0.7, weight_0_given_gender_0=0.8,
-                       weight_0_given_gender_1=0.4, height_0_given_gender_0=0.7, height_0_given_gender1=0.3,
-                       filename=files[2], threshold=0.0001)
-
-    em_70_percent = EM(gender_0=0.7, weight_0_given_gender_0=0.8,
-                       weight_0_given_gender_1=0.4, height_0_given_gender_0=0.7, height_0_given_gender1=0.3,
-                       filename=files[3], threshold=0.0001)
-
-    em_100_percent = EM(gender_0=0.7, weight_0_given_gender_0=0.8,
-                        weight_0_given_gender_1=0.4, height_0_given_gender_0=0.7, height_0_given_gender1=0.3,
-                        filename=files[4], threshold=0.0001)
-
+    # em_30_percent = EM(gender_0=0.7, Weight_0_given_gender_0=0.8,
+    #                    Weight_0_given_gender_1=0.4, height_0_given_gender_0=0.7, height_0_given_gender1=0.3,
+    #                    filename=files[1], threshold=0.0001)
+    #
+    # em_50_percent = EM(gender_0=0.7, Weight_0_given_gender_0=0.8,
+    #                    Weight_0_given_gender_1=0.4, height_0_given_gender_0=0.7, height_0_given_gender1=0.3,
+    #                    filename=files[2], threshold=0.0001)
+    #
+    # em_70_percent = EM(gender_0=0.7, Weight_0_given_gender_0=0.8,
+    #                    Weight_0_given_gender_1=0.4, height_0_given_gender_0=0.7, height_0_given_gender1=0.3,
+    #                    filename=files[3], threshold=0.0001)
+    #
+    # em_100_percent = EM(gender_0=0.7, Weight_0_given_gender_0=0.8,
+    #                     Weight_0_given_gender_1=0.4, height_0_given_gender_0=0.7, height_0_given_gender1=0.3,
+    #                     filename=files[4], threshold=0.0001)
+    #
 
 
 if __name__ == '__main__':
