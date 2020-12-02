@@ -1,7 +1,7 @@
 import os
 import sys
 import math
-
+# from IPython.display import display
 try:
     import matplotlib.pyplot as plt
     import pandas as pd
@@ -129,7 +129,6 @@ class EM:
         return expected_data_dict
 
     def m_step(self, theta_dict, filename):
-        # global iterations
         self.iterations += 1
         new_param_dict = dict()
         expected_data_dict = self.e_step(theta_dict, filename)
@@ -206,9 +205,9 @@ class EM:
         new_param_dict[('1', 'x', '1')] = 1 - new_param_dict[('1', 'x', '0')]
 
         if self.has_converged(theta_dict, new_param_dict, self.threshold):
-            print("Total Iterations", self.iterations)
-            print("Final conditional probability tables:")
-            print_conditional_prob(new_param_dict)
+            # print("Total Iterations", self.iterations)
+            # print("Final conditional probability tables:")
+            self.print_em_results(new_param_dict)
         else:
             self.m_step(new_param_dict, filename)
 
@@ -224,12 +223,52 @@ class EM:
 
         self.log_likelihood_list.append(log_likelihood_new_param)
 
-        difference = math.fabs(log_likelihood_curr_param - log_likelihood_new_param)
-        if difference <= self.threshold:
+        delta_log_likelihood = math.fabs(log_likelihood_curr_param - log_likelihood_new_param)
+        if delta_log_likelihood < threshold:
             return True
         else:
             return False
 
+    def print_em_results(self, param_dict):
+        gender_df = pd.DataFrame()
+        weight_given_gender_df = pd.DataFrame()
+        height_given_gender_df = pd.DataFrame()
+
+
+        print("filename:", self.filename)
+        print("total iterations:", self.iterations)
+        print("----------------------------------------Gender Table----------------------------------------")
+        gender_df["P(gender=0)"] = [param_dict[('0', 'x', 'x')]]
+        gender_df["P(gender=1)"] = [param_dict[('1', 'x', 'x')]]
+        print(gender_df.to_string(index=False))
+        print("--------------------------------------------------------------------------------------------")
+        print("----------------------------------------Weight|Gender Table---------------------------------")
+
+        weight_given_gender_df["P(weight=0|gender=0)"] = [param_dict[('0', '0', 'x')]]
+        weight_given_gender_df["P(weight=1|gender=0)"] = [param_dict[('0', '1', 'x')]]
+        weight_given_gender_df["P(weight=0|gender=1)"] = [param_dict[('1', '0', 'x')]]
+        weight_given_gender_df["P(weight=1|gender=0)"] = [param_dict[('1', '1', 'x')]] if param_dict[('0', '0', 'x')] != 0 else ["Blah"]
+        print(weight_given_gender_df.to_string(index=False))
+        print("--------------------------------------------------------------------------------------------")
+
+        print("----------------------------------------Height|Gender Table---------------------------------")
+
+        height_given_gender_df["P(height=0|gender=0)"] = [param_dict[('0', 'x', '0')]]
+        height_given_gender_df["P(height=1|gender=0)"] = [param_dict[('0', 'x', '1')]]
+        height_given_gender_df["P(height=0|gender=1)"] = [param_dict[('1', 'x', '0')]]
+        height_given_gender_df["P(height=1|gender=1)"] = [param_dict[('1', 'x', '1')]]
+        print(height_given_gender_df.to_string(index=False))
+
+        print(
+            "--------------------------------------------------------------------------------------------")  # print(gender_df)
+        self.generate_graph()
+
+    def generate_graph(self):
+        plt.plot(self.log_likelihood_list)
+        plt.title(self.filename)
+        plt.xlabel("#Iterations")
+        plt.ylabel("Log likelihood")
+        plt.show()
 """
 Hint: E-step of the EM algorithm is essentially estimating the probabilities of different 
 values of Gender given that we know a person’s Weight and Height, i.e., 
@@ -263,32 +302,6 @@ P(W,H) = SUM_OVER_G( P(G)*P(W|G)*P(H|G) )
 '''
 
 
-def print_conditional_prob(param_dict):
-
-    for key in param_dict:
-        if key[0] == '0':
-            if key[1] == '0' and key[2] == 'x':
-                print("p(weight=0|gender=0):", param_dict[('0', '0', 'x')])
-            elif key[1] == '1' and key[2] == 'x':
-                print("p(weight=1|gender=0):", param_dict[('0', '1', 'x')])
-            elif key[1] == 'x' and key[2] == '0':
-                print("p(height=0|gender=0):", param_dict[('0', 'x', '0')])
-            elif key[1] == 'x' and key[2] == '1':
-                print("p(height=1|gender=0):", param_dict[('0', 'x', '1')])
-            else:
-                print("p(gender=0):", param_dict[('0', 'x', 'x')])
-        else:
-            if key[1] == '0' and key[2] == 'x':
-                print("p(weight=0|gender=1):", param_dict[('1', '0', 'x')])
-            elif key[1] == '1' and key[2] == 'x':
-                print("p(weight=1|gender=1):", param_dict[('1', '1', 'x')])
-            elif key[1] == 'x' and key[2] == '0':
-                print("p(height=0|gender=1):", param_dict[('1', 'x', '0')])
-            elif key[1] == 'x' and key[2] == '1':
-                print("p(height=1|gender=1):", param_dict[('1', 'x', '1')])
-            else:
-                print("p(gender=1):", param_dict[('1', 'x', 'x')])
-
 
 
 def main():
@@ -304,32 +317,24 @@ def main():
     em_10_percent = EM(gender_0=0.7, weight_0_given_gender_0=0.8,
                        weight_0_given_gender_1=0.4, height_0_given_gender_0=0.7, height_0_given_gender1=0.3,
                        filename=files[0], threshold=0.0001)
-    em_30_percent = EM(gender_0=0.7, weight_0_given_gender_0=0.8,
-                       weight_0_given_gender_1=0.4, height_0_given_gender_0=0.7, height_0_given_gender1=0.3,
-                       filename=files[1], threshold=0.0001)
-
+    # em_30_percent = EM(gender_0=0.7, weight_0_given_gender_0=0.8,
+    #                    weight_0_given_gender_1=0.4, height_0_given_gender_0=0.7, height_0_given_gender1=0.3,
+    #                    filename=files[1], threshold=0.0001)
     #
-    em_50_percent = EM(gender_0=0.7, weight_0_given_gender_0=0.8,
-                       weight_0_given_gender_1=0.4, height_0_given_gender_0=0.7, height_0_given_gender1=0.3,
-                       filename=files[2], threshold=0.0001)
-
     #
-    em_70_percent = EM(gender_0=0.7, weight_0_given_gender_0=0.8,
-                       weight_0_given_gender_1=0.4, height_0_given_gender_0=0.7, height_0_given_gender1=0.3,
-                       filename=files[3], threshold=0.0001)
+    # em_50_percent = EM(gender_0=0.7, weight_0_given_gender_0=0.8,
+    #                    weight_0_given_gender_1=0.4, height_0_given_gender_0=0.7, height_0_given_gender1=0.3,
+    #                    filename=files[2], threshold=0.0001)
     #
-    em_100_percent = EM(gender_0=0.7, weight_0_given_gender_0=0.8,
-                        weight_0_given_gender_1=0.4, height_0_given_gender_0=0.7, height_0_given_gender1=0.3,
-                        filename=files[4], threshold=0.0001)
-
-
-
-    # plt.plot(Y)
-    # plt.title("Yoyograph")
-    # plt.xlabel("#Iterations")
-    # plt.ylabel("Log likelihood")
     #
-    # plt.show()
+    # em_70_percent = EM(gender_0=0.7, weight_0_given_gender_0=0.8,
+    #                    weight_0_given_gender_1=0.4, height_0_given_gender_0=0.7, height_0_given_gender1=0.3,
+    #                    filename=files[3], threshold=0.0001)
+    #
+    # em_100_percent = EM(gender_0=0.7, weight_0_given_gender_0=0.8,
+    #                     weight_0_given_gender_1=0.4, height_0_given_gender_0=0.7, height_0_given_gender1=0.3,
+    #                     filename=files[4], threshold=0.0001)
+    #
 
 
 if __name__ == '__main__':
