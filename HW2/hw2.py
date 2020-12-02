@@ -29,8 +29,6 @@ This class implements Expectation Maximization
 """
 
 
-
-
 class EM:
 
     def __init__(self, gender_0, weight_0_given_gender_0, weight_0_given_gender_1, height_0_given_gender_0,
@@ -406,22 +404,26 @@ def main():
     Create an EM() object for each of the hw2dataset files
     """
 
+    # 10% missing
     EM(gender_0=0.7, weight_0_given_gender_0=0.8,
        weight_0_given_gender_1=0.4, height_0_given_gender_0=0.7, height_0_given_gender1=0.3,
        filename=files[0], threshold=0.0001)
-
+    # 30% missing
     EM(gender_0=0.7, weight_0_given_gender_0=0.8,
        weight_0_given_gender_1=0.4, height_0_given_gender_0=0.7, height_0_given_gender1=0.3,
        filename=files[1], threshold=0.0001)
 
+    # 50% missing
     EM(gender_0=0.7, weight_0_given_gender_0=0.8,
        weight_0_given_gender_1=0.4, height_0_given_gender_0=0.7, height_0_given_gender1=0.3,
        filename=files[2], threshold=0.0001)
 
+    # 70% missing
     EM(gender_0=0.7, weight_0_given_gender_0=0.8,
        weight_0_given_gender_1=0.4, height_0_given_gender_0=0.7, height_0_given_gender1=0.3,
        filename=files[3], threshold=0.0001)
 
+    # 100% missing
     EM(gender_0=0.7, weight_0_given_gender_0=0.8,
        weight_0_given_gender_1=0.4, height_0_given_gender_0=0.7, height_0_given_gender1=0.3,
        filename=files[4], threshold=0.0001)
