@@ -1,7 +1,13 @@
 """
-This program implements the EM(Expectation Maximization) algorithm for learning paramaters for a simple Bayesian
+This program implements the EM(Expectation Maximization) algorithm for learning parameters for a simple Bayesian
 network from missing data
+E-step of the EM algorithm is essentially estimating the probabilities of different
+values of Gender given that we know a person’s Weight and Height, i.e.,
+P(Gender | Weight, Height), and use these estimations as if they are our (expected) counts.
+
+P(Gender | Weight, Height) = [P(Weight|Gender) * P(Height|Gender) * P(Gender)] / P(Weight,Height)
 """
+
 __author___ = "Yaniv Bronshtein"
 __version__ = "1.0"
 
@@ -15,12 +21,14 @@ try:
     import matplotlib.pyplot as plt
     import pandas as pd
 except ImportError:
-    os.system("pip install matplotlib")
-    os.system("pip install pandas")
+    os.system("pip3 install matplotlib")
+    os.system("pip3 install pandas")
 
 """
 This class implements Expectation Maximization
 """
+
+
 
 
 class EM:
@@ -43,40 +51,6 @@ class EM:
         sys.setrecursionlimit(2000)  # Recursion limit necessary to avoid the error: "RecursionError:
         # maximum recursion depth exceeded while calling a Python object"
 
-        self.theta_dict = dict({  # Dictionary that stores the initial parameters and their complements in a dictionary
-            ('0', 'x', 'x'): gender_0,
-            ('1', 'x', 'x'): 1 - gender_0,
-
-            ('0', '0', 'x'): weight_0_given_gender_0,
-            ('0', '1', 'x'): 1 - weight_0_given_gender_0,
-
-            ('1', '0', 'x'): weight_0_given_gender_1,
-            ('1', '1', 'x'): 1 - weight_0_given_gender_1,
-
-            ('0', 'x', '0'): height_0_given_gender_0,
-            ('0', 'x', '1'): 1 - height_0_given_gender_0,
-
-            ('1', 'x', '0'): height_0_given_gender1,
-            ('1', 'x', '1'): 1 - height_0_given_gender1
-        })
-
-        self.missing_data_options = [
-            ('0', '-', '-'),
-            ('1', '-', '-'),
-
-            ('0', '0', '-'),
-            ('0', '1', '-'),
-
-            ('1', '0', '-'),
-            ('1', '1', '-'),
-
-            ('0', '-', '0'),
-            ('0', '-', '1'),
-
-            ('1', '-', '0'),
-            ('1', '-', '1')
-        ]
-
         self.known_data_options = [
             ('0', 'x', 'x'),
             ('1', 'x', 'x'),
@@ -93,6 +67,23 @@ class EM:
             ('1', 'x', '0'),
             ('1', 'x', '1')
         ]
+
+        self.theta_dict = dict({  # Dictionary that stores the initial parameters and their complements in a dictionary
+            ('0', 'x', 'x'): gender_0,
+            ('1', 'x', 'x'): 1 - gender_0,
+
+            ('0', '0', 'x'): weight_0_given_gender_0,
+            ('0', '1', 'x'): 1 - weight_0_given_gender_0,
+
+            ('1', '0', 'x'): weight_0_given_gender_1,
+            ('1', '1', 'x'): 1 - weight_0_given_gender_1,
+
+            ('0', 'x', '0'): height_0_given_gender_0,
+            ('0', 'x', '1'): 1 - height_0_given_gender_0,
+
+            ('1', 'x', '0'): height_0_given_gender1,
+            ('1', 'x', '1'): 1 - height_0_given_gender1
+        })
 
         self.operations = [
             'A',  # Compute P(Gender=0) and P(Gender=1)
@@ -111,11 +102,6 @@ class EM:
         self.filename = filename
         self.m_step(self.theta_dict, self.filename)  # Call m_step to begin the algorithm
 
-    '''
-     
-
-    '''
-
     def e_step(self, theta_dict, filename):
         """
         This method calculates the expectation for the current step to be used during the m-step using the following
@@ -128,8 +114,6 @@ class EM:
         :param filename: Name of file to be parsed
         :return: Dictionary of expected values
         """
-
-        # todo: extract function
         data_dict = parse_data(filename)
         expected_data_dict = data_dict.copy()  # At this point contains the current frequencies for tuples
         # All possible missing data tuples
@@ -219,16 +203,19 @@ class EM:
 
     def m_step(self, theta_dict, filename):
         """
-
+        This method computes
         :param theta_dict: dictionary of current parameters to be updated in the e_step
         :param filename:
         :return:
         """
         self.iterations += 1
         expected_data_dict = self.e_step(theta_dict, filename)  # Calculate the expectations
+
+        # Computer the new parameters
         new_param_dict = self.compute_new_params(expected_data_dict=expected_data_dict, new_param_dict=dict(),
                                                  op_index=-1)
 
+        # Check if it is time to halt the EM algorithm. Call print_em_results() if that is the case
         has_converged = self.has_converged(theta_dict, new_param_dict, self.threshold)
         if has_converged:
             self.print_em_results(new_param_dict)
@@ -236,7 +223,14 @@ class EM:
             self.m_step(new_param_dict, filename)
 
     def compute_new_params(self, expected_data_dict, new_param_dict, op_index):
-
+        """
+        This recursive method computes the probabilities necessary for the tables Gender, Weight|Gender,
+        and Height|Gender
+        :param expected_data_dict: Current expectations
+        :param new_param_dict: new_parameters, Initially this is usually empty dictionary
+        :param op_index: index of operation to be performed in operations list. Initially this is usually -1
+        :return: updated new_param_dict after all operations have been performed
+        """
         n = 0
         d = 0
         if op_index + 1 == len(self.operations):
@@ -245,10 +239,9 @@ class EM:
         op_index += 1
         for key in expected_data_dict:
             # If the first element is '-' we are looking at missing data; skip
-            # if key in self.missing_data_options:
             if key[0] == '-':
                 continue
-            else:
+            else:  # Calculate the numerator and denominator depending on the operation
                 if self.operations[op_index] == 'A':
                     d += expected_data_dict[key]
                     if key[0] == '0':
@@ -275,29 +268,39 @@ class EM:
                             n += expected_data_dict[key]
                 else:
                     break
-        if self.operations[op_index] == "A":
+
+        if self.operations[op_index] == 'A':
             new_param_dict[self.known_data_options[0]] = n / d
             new_param_dict[self.known_data_options[1]] = 1 - n / d
 
-        elif self.operations[op_index] == "B":
+        elif self.operations[op_index] == 'B':
             new_param_dict[self.known_data_options[2]] = n / d
             new_param_dict[self.known_data_options[3]] = 1 - n / d
 
-        elif self.operations[op_index] == "C":
+        elif self.operations[op_index] == 'C':
             new_param_dict[self.known_data_options[4]] = n / d
             new_param_dict[self.known_data_options[5]] = 1 - n / d
 
-        elif self.operations[op_index] == "D":
+        elif self.operations[op_index] == 'D':
             new_param_dict[self.known_data_options[6]] = n / d
             new_param_dict[self.known_data_options[7]] = 1 - n / d
 
-        elif self.operations[op_index] == "E":
+        elif self.operations[op_index] == 'E':
             new_param_dict[self.known_data_options[8]] = n / d
             new_param_dict[self.known_data_options[9]] = 1 - n / d
 
         return self.compute_new_params(expected_data_dict, new_param_dict, op_index)
 
     def has_converged(self, curr_param_dict, new_param_dict, threshold):
+        """
+        This method determines whether to stop the EM algorithm. It calculates the difference of log_likelihoods
+        between the current learned parameters and the newly learned parameters.
+        If the difference is under the threshold, the method returns True
+        :param curr_param_dict: Current learned parameters for the given Bayesian Network
+        :param new_param_dict: Newly learned parameters for the given Bayesian Network
+        :param threshold: Threshold provided by the user for halting EM algorithm
+        :return: True if it is time to halt the EM algorithm and False otherwise
+        """
         log_likelihood_curr_param = 0
         log_likelihood_new_param = 0
         for key in curr_param_dict:
@@ -316,6 +319,13 @@ class EM:
             return False
 
     def print_em_results(self, param_dict):
+        """
+        This method creates a DataFrame for each of the three tables required:
+        Gender Table, Weight|Gender Table, and Height|Gender Table and prints the DataFrames as strings
+        After the printing is done, generate_graph() is called to create the Log Likelihood vs Iterations pyplot
+        :param param_dict: Dictionary of Final learned parameters
+        :return: None
+        """
         gender_df = pd.DataFrame()
         weight_given_gender_df = pd.DataFrame()
         height_given_gender_df = pd.DataFrame()
@@ -345,29 +355,30 @@ class EM:
         print(height_given_gender_df.to_string(index=False))
 
         print(
-            "--------------------------------------------------------------------------------------------")  # print(gender_df)
+            "--------------------------------------------------------------------------------------------")
         self.generate_graph()
 
     def generate_graph(self):
-        # plt.plot(self.log_likelihood_list, color='magenta', marker='o')
-        # plt.title(self.filename)
-        # plt.xlabel("#Iterations")
-        # plt.ylabel("Log likelihood")
-        # plt.show()
-        pass
-
-"""
-Hint: E-step of the EM algorithm is essentially estimating the probabilities of different 
-values of Gender given that we know a person’s Weight and Height, i.e., 
-P(Gender | Weight, Height), and use these estimations as if they are our (expected) counts.
-
-P(Gender | Weight, Height) = [P(Weight|Gender) * P(Height|Gender) * P(Gender)] / P(Weight,Height)
-"""
+        """
+        This method prints the Log Likelihood vs Iterations of the EM algorithm for the given
+        file that the EM algorithm is run on
+        :return: None
+        """
+        plt.plot(self.log_likelihood_list, color='magenta', marker='o')
+        plt.title(self.filename)
+        plt.xlabel("#Iterations")
+        plt.ylabel("Log likelihood")
+        plt.show()
 
 
 def parse_data(filename):
+    """
+    This function parses the given dataset files and stores all the tuples in a dictionary
+    :param filename: String file name
+    :return: populated dictionary
+    """
     file_obj = open(filename, 'r')
-    data_dict = dict()
+    data_dict = dict()  # Create an empty dictionary for reading in the data key=tuple val=frequency
     for line in file_obj.readlines():
         line = line.strip().split()  # Trim and tokenize line
         if line[0] == "Gender":  # Skip the first line with the labels
@@ -382,6 +393,7 @@ def parse_data(filename):
 
 
 def main():
+    # List of files
     files = [
         'hw2dataset_10.txt',
         'hw2dataset_30.txt',
@@ -390,26 +402,29 @@ def main():
         'hw2dataset_100.txt'
 
     ]
+    """
+    Create an EM() object for each of the hw2dataset files
+    """
 
-    em_10_percent = EM(gender_0=0.7, weight_0_given_gender_0=0.8,
-                       weight_0_given_gender_1=0.4, height_0_given_gender_0=0.7, height_0_given_gender1=0.3,
-                       filename=files[0], threshold=0.0001)
-    # em_30_percent = EM(gender_0=0.7, Weight_0_given_gender_0=0.8,
-    #                    Weight_0_given_gender_1=0.4, height_0_given_gender_0=0.7, height_0_given_gender1=0.3,
-    #                    filename=files[1], threshold=0.0001)
-    #
-    # em_50_percent = EM(gender_0=0.7, Weight_0_given_gender_0=0.8,
-    #                    Weight_0_given_gender_1=0.4, height_0_given_gender_0=0.7, height_0_given_gender1=0.3,
-    #                    filename=files[2], threshold=0.0001)
-    #
-    # em_70_percent = EM(gender_0=0.7, Weight_0_given_gender_0=0.8,
-    #                    Weight_0_given_gender_1=0.4, height_0_given_gender_0=0.7, height_0_given_gender1=0.3,
-    #                    filename=files[3], threshold=0.0001)
-    #
-    # em_100_percent = EM(gender_0=0.7, Weight_0_given_gender_0=0.8,
-    #                     Weight_0_given_gender_1=0.4, height_0_given_gender_0=0.7, height_0_given_gender1=0.3,
-    #                     filename=files[4], threshold=0.0001)
-    #
+    EM(gender_0=0.7, weight_0_given_gender_0=0.8,
+       weight_0_given_gender_1=0.4, height_0_given_gender_0=0.7, height_0_given_gender1=0.3,
+       filename=files[0], threshold=0.0001)
+
+    EM(gender_0=0.7, weight_0_given_gender_0=0.8,
+       weight_0_given_gender_1=0.4, height_0_given_gender_0=0.7, height_0_given_gender1=0.3,
+       filename=files[1], threshold=0.0001)
+
+    EM(gender_0=0.7, weight_0_given_gender_0=0.8,
+       weight_0_given_gender_1=0.4, height_0_given_gender_0=0.7, height_0_given_gender1=0.3,
+       filename=files[2], threshold=0.0001)
+
+    EM(gender_0=0.7, weight_0_given_gender_0=0.8,
+       weight_0_given_gender_1=0.4, height_0_given_gender_0=0.7, height_0_given_gender1=0.3,
+       filename=files[3], threshold=0.0001)
+
+    EM(gender_0=0.7, weight_0_given_gender_0=0.8,
+       weight_0_given_gender_1=0.4, height_0_given_gender_0=0.7, height_0_given_gender1=0.3,
+       filename=files[4], threshold=0.0001)
 
 
 if __name__ == '__main__':
