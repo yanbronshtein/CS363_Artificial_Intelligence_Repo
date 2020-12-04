@@ -1,4 +1,4 @@
-# Artificial Intelligence Programming Assignment #1 Heuristic Search
+# Artificial Intelligence Programming Assignment #2 Expectation Maximization
 
 ***Make sure you have python version at least 3.6***
 ### Windows

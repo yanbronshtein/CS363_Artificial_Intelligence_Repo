@@ -13,8 +13,8 @@ __version__ = "1.0"
 
 # Standard libraries
 import os
-import sys
 import math
+import random
 
 # Importing non-standard libraries that require pip to install
 try:
@@ -31,22 +31,23 @@ This class implements Expectation Maximization
 
 class EM:
 
-    def __init__(self, gender_0, weight_0_given_gender_0, weight_0_given_gender_1, height_0_given_gender_0,
-                 height_0_given_gender1, filename: str, threshold):
+    def __init__(self, g_0, w_0_given_g_0, w0_given_g0_1, h_0_given_g_0,
+                 h_0_given_g1, filename: str, threshold, make_graph=True):
         """
         Default constructor for EM class
-        :param gender_0:  P(Gender=0)
-        :param weight_0_given_gender_0: P(Weight=0|Gender=0)
-        :param weight_0_given_gender_1: P(Weight=0|Gender=1)
-        :param height_0_given_gender_0: P(height=0|Gender=0)
-        :param height_0_given_gender1: P(height=0|Gender=1)
+        :param g_0:  P(Gender=0)
+        :param w_0_given_g_0: P(Weight=0|Gender=0)
+        :param w0_given_g0_1: P(Weight=0|Gender=1)
+        :param h_0_given_g_0: P(height=0|Gender=0)
+        :param h_0_given_g1: P(height=0|Gender=1)
         :param filename: File of this form:"hw2dataset_{%missing_data}.txt"
         :param threshold: Threshold for convergence
+        :param make_graph Tells EM whether to generate matplotlib or not
         """
+        self.make_graph = make_graph
         self.threshold = threshold  # Threshold for convergence testing
         self.iterations = 0  # Stores the number of iterations of the EM algorithm
-        self.log_likelihood_list = list()  # List to store log_likelihoods for a given iteration of EM
-        # sys.setrecursionlimit(2000)  # Recursion limit necessary to avoid the error: "RecursionError:
+        self.log_likelihood_list = []  # List to store log_likelihoods for a given iteration of EM
         # maximum recursion depth exceeded while calling a Python object"
 
         self.known_data_options = [
@@ -67,20 +68,20 @@ class EM:
         ]
 
         self.theta_dict = dict({  # Dictionary that stores the initial parameters and their complements in a dictionary
-            ('0', 'x', 'x'): gender_0,
-            ('1', 'x', 'x'): 1 - gender_0,
+            ('0', 'x', 'x'): g_0,
+            ('1', 'x', 'x'): 1 - g_0,
 
-            ('0', '0', 'x'): weight_0_given_gender_0,
-            ('0', '1', 'x'): 1 - weight_0_given_gender_0,
+            ('0', '0', 'x'): w_0_given_g_0,
+            ('0', '1', 'x'): 1 - w_0_given_g_0,
 
-            ('1', '0', 'x'): weight_0_given_gender_1,
-            ('1', '1', 'x'): 1 - weight_0_given_gender_1,
+            ('1', '0', 'x'): w0_given_g0_1,
+            ('1', '1', 'x'): 1 - w0_given_g0_1,
 
-            ('0', 'x', '0'): height_0_given_gender_0,
-            ('0', 'x', '1'): 1 - height_0_given_gender_0,
+            ('0', 'x', '0'): h_0_given_g_0,
+            ('0', 'x', '1'): 1 - h_0_given_g_0,
 
-            ('1', 'x', '0'): height_0_given_gender1,
-            ('1', 'x', '1'): 1 - height_0_given_gender1
+            ('1', 'x', '0'): h_0_given_g1,
+            ('1', 'x', '1'): 1 - h_0_given_g1
         })
 
         self.operations = [
@@ -90,12 +91,6 @@ class EM:
             'D',  # Compute P(Height=0|Gender=0) and P(Height=1|Gender=0)
             'E',  # Compute P(Height=0|Gender=1) and P(Height=1|Gender=1)
         ]
-
-        # Calculate the first log probability and append to log_likelihood list
-        # log_prob = 0
-        # for key in self.theta_dict:
-        #     log_prob += math.log(self.theta_dict[key])
-        # self.log_likelihood_list.append(log_prob)
 
         self.filename = filename
         self.m_step(self.theta_dict, self.filename)  # Call m_step to begin the algorithm
@@ -299,32 +294,27 @@ class EM:
         This method determines whether to stop the EM algorithm. It calculates the difference of log_likelihoods
         between the current learned parameters and the newly learned parameters.
         If the difference is under the threshold, the method returns True
+        :param data_dict: dict containing data necessary
         :param curr_param_dict: Current learned parameters for the given Bayesian Network
         :param new_param_dict: Newly learned parameters for the given Bayesian Network
         :param threshold: Threshold provided by the user for halting EM algorithm
         :return: True if it is time to halt the EM algorithm and False otherwise
         """
 
-        # print("iteration#:", self.iterations)
-        # print("curr_param_dict")
-        # print(curr_param_dict)
-
-        # print("new_param_dict")
-        # print(new_param_dict)
         log_likelihood_curr_param = 0
         log_likelihood_new_param = 0
         for key in data_dict:
             g, w, h = key
             prob_using_curr_param_dict = 0
             prob_using_new_param_dict = 0
-            # if key is ('-', W, H) then calculate log(P(W,H))
+            # if key starts with '-' we must compute log(P(W,H))
             if g == '-':
-                # P(W,H) = sum_of_G P(G) * P(W|G) * P(H|G) using probabilities from the previous probability dict
+                # P(W,H) = SUM OVER G of P(G) * P(W|G) * P(H|G) using probabilities from the current param dict
                 prob_using_curr_param_dict += curr_param_dict[('0', 'x', 'x')] * curr_param_dict[('0', w, 'x')] * \
                                               curr_param_dict[('0', 'x', h)]
                 prob_using_curr_param_dict += curr_param_dict[('1', 'x', 'x')] * curr_param_dict[('1', w, 'x')] * \
                                               curr_param_dict[('1', 'x', h)]
-                # P(W,H) = sum_of_G P(G) * P(W|G) * P(H|G) using probabilities from the new probability dict
+                # P(W,H) = SUM OVER G of  P(G) * P(W|G) * P(H|G) using probabilities from the new param dict
                 prob_using_new_param_dict += new_param_dict[('0', 'x', 'x')] * new_param_dict[('0', w, 'x')] * \
                                              new_param_dict[('0', 'x', h)]
                 prob_using_new_param_dict += new_param_dict[('1', 'x', 'x')] * new_param_dict[('1', w, 'x')] * \
@@ -332,29 +322,24 @@ class EM:
 
             # else key is a complete data (G,W,H) then calculate log(P(G,W,H))
             else:
-                # P(G,W,H) = P(G) * P(W|G) * P(H|G) using probabilities from the previous probability dict
+                # Compute P(G,W,H) using probabilities from the current param dict
                 prob_using_curr_param_dict = curr_param_dict[(g, 'x', 'x')] * curr_param_dict[(g, w, 'x')] * \
                                              curr_param_dict[(g, 'x', h)]
-                # P(G,W,H) = P(G) * P(W|G) * P(H|G) using probabilities from the new probability dict
+                # Compute P(G,W,H) using probabilities from the new param dict
                 prob_using_new_param_dict = new_param_dict[(g, 'x', 'x')] * new_param_dict[(g, w, 'x')] * \
                                             new_param_dict[(g, 'x', h)]
-                # add log(P(G,W,H)) to the total log probabilities
 
-            # add log(P(W,H)) to the total log probabilities
+            # Increment by log(P(W,H)) to the total log probabilities
             log_likelihood_curr_param += math.log(prob_using_curr_param_dict) * data_dict[key]
             log_likelihood_new_param += math.log(prob_using_new_param_dict) * data_dict[key]
 
+        # In the first iteration, we must add the curr log likelihood in addition to the new log_likelihood
         if self.iterations == 1:
             self.log_likelihood_list.append(log_likelihood_curr_param)
-
         self.log_likelihood_list.append(log_likelihood_new_param)
 
-        # print("prob_using_curr_param_dict", prob_using_curr_param_dict)
-
         delta_log_likelihood = math.fabs(log_likelihood_curr_param - log_likelihood_new_param)
-        # print("log_likelihood_curr_param", log_likelihood_curr_param)
-        # print("log_likelihood_new_param", log_likelihood_new_param)
-        # print("delta:", delta_log_likelihood)
+
         if delta_log_likelihood <= threshold:
             return True
         else:
@@ -398,7 +383,8 @@ class EM:
 
         print(
             "--------------------------------------------------------------------------------------------")
-        self.generate_graph()
+        if self.make_graph:
+            self.generate_graph()
 
     def generate_graph(self):
         """
@@ -434,9 +420,21 @@ def parse_data(filename):
     return data_dict
 
 
+def generate_probabilities():
+    """
+    This function uses random.uniform() method from python's random library to generate 5 probabilities
+    to be used as input for two test cases
+    :return:
+    """
+    x = []
+    for i in range(5):
+        x.append(random.uniform(0, 1))
+    return x
+
+
 def main():
     # List of files
-    files = [
+    f = [
         'hw2dataset_10.txt',
         'hw2dataset_30.txt',
         'hw2dataset_50.txt',
@@ -444,49 +442,158 @@ def main():
         'hw2dataset_100.txt'
 
     ]
+
     """
-    Create an EM() object for each of the hw2dataset files
+       Random probabilities
+       """
+    test_1_probs = generate_probabilities()
+    test_2_probs = generate_probabilities()
+    """
+    Non-random probabilities
+    """
+    test_3_probs = [0.1, 0.1, 0.1, 0.1, 0.1]
+    test_4_probs = [0.9, 0.9, 0.9, 0.9, 0.9]
+    test_5_probs = [0.5, 0.5, 0.5, 0.5, 0.5]
+
+    """
+    hw2_dataset_10.txt
+    """
+    em_10 = EM(g_0=0.7, w_0_given_g_0=0.8,
+               w0_given_g0_1=0.4, h_0_given_g_0=0.7, h_0_given_g1=0.3,
+               filename=f[0], threshold=0.0001)
+    # Tests for hw2dataset_10.txt
+    test_1_em_10 = EM(g_0=test_1_probs[0], w_0_given_g_0=test_1_probs[1],
+                      w0_given_g0_1=test_1_probs[2], h_0_given_g_0=test_1_probs[3], h_0_given_g1=test_1_probs[4],
+                      filename=f[0], threshold=0.0001)
+
+    test_2_em_10 = EM(g_0=test_2_probs[0], w_0_given_g_0=test_2_probs[1],
+                      w0_given_g0_1=test_2_probs[2], h_0_given_g_0=test_2_probs[3], h_0_given_g1=test_2_probs[4],
+                      filename=f[0], threshold=0.0001)
+
+    test_3_em_10 = EM(g_0=test_3_probs[0], w_0_given_g_0=test_3_probs[1],
+                      w0_given_g0_1=test_3_probs[2], h_0_given_g_0=test_3_probs[3], h_0_given_g1=test_3_probs[4],
+                      filename=f[0], threshold=0.0001)
+
+    test_4_em_10 = EM(g_0=test_4_probs[0], w_0_given_g_0=test_4_probs[1],
+                      w0_given_g0_1=test_4_probs[2], h_0_given_g_0=test_4_probs[3], h_0_given_g1=test_4_probs[4],
+                      filename=f[0], threshold=0.0001)
+
+    test_5_em_10 = EM(g_0=test_5_probs[0], w_0_given_g_0=test_5_probs[1],
+                      w0_given_g0_1=test_5_probs[2], h_0_given_g_0=test_5_probs[3], h_0_given_g1=test_5_probs[4],
+                      filename=f[0], threshold=0.0001)
+
+    """
+        hw2_dataset_30.txt
     """
 
-    em_10 = EM(gender_0=0.7, weight_0_given_gender_0=0.8,
-               weight_0_given_gender_1=0.4, height_0_given_gender_0=0.7, height_0_given_gender1=0.3,
-               filename=files[0], threshold=0.0001)
+    em_30 = EM(g_0=0.7, w_0_given_g_0=0.8,
+               w0_given_g0_1=0.4, h_0_given_g_0=0.7, h_0_given_g1=0.3,
+               filename=f[1], threshold=0.0001)
 
-    print("likelihoodlist")
-    print(em_10.log_likelihood_list)
-    em_10.log_likelihood_list = None
-    em_30 = EM(gender_0=0.7, weight_0_given_gender_0=0.8,
-               weight_0_given_gender_1=0.4, height_0_given_gender_0=0.7, height_0_given_gender1=0.3,
-               filename=files[1], threshold=0.0001)
+    test_1_em_30 = EM(g_0=test_1_probs[0], w_0_given_g_0=test_1_probs[1],
+                      w0_given_g0_1=test_1_probs[2], h_0_given_g_0=test_1_probs[3], h_0_given_g1=test_1_probs[4],
+                      filename=f[1], threshold=0.0001)
 
-    print("likelihoodlist")
-    print(em_30.log_likelihood_list)
-    em_30.log_likelihood_list = None
+    test_2_em_30 = EM(g_0=test_2_probs[0], w_0_given_g_0=test_2_probs[1],
+                      w0_given_g0_1=test_2_probs[2], h_0_given_g_0=test_2_probs[3], h_0_given_g1=test_2_probs[4],
+                      filename=f[1], threshold=0.0001)
 
-    em_50 = EM(gender_0=0.7, weight_0_given_gender_0=0.8,
-               weight_0_given_gender_1=0.4, height_0_given_gender_0=0.7, height_0_given_gender1=0.3,
-               filename=files[2], threshold=0.0001)
+    test_3_em_30 = EM(g_0=test_3_probs[0], w_0_given_g_0=test_3_probs[1],
+                      w0_given_g0_1=test_3_probs[2], h_0_given_g_0=test_3_probs[3], h_0_given_g1=test_3_probs[4],
+                      filename=f[1], threshold=0.0001)
 
-    print("likelihoodlist")
-    print(em_50.log_likelihood_list)
-    em_50.log_likelihood_list = None
+    test_4_em_30 = EM(g_0=test_4_probs[0], w_0_given_g_0=test_4_probs[1],
+                      w0_given_g0_1=test_4_probs[2], h_0_given_g_0=test_4_probs[3], h_0_given_g1=test_4_probs[4],
+                      filename=f[1], threshold=0.0001)
 
-    em_70 = EM(gender_0=0.7, weight_0_given_gender_0=0.8,
-               weight_0_given_gender_1=0.4, height_0_given_gender_0=0.7, height_0_given_gender1=0.3,
-               filename=files[3], threshold=0.0001)
+    test_5_em_30 = EM(g_0=test_5_probs[0], w_0_given_g_0=test_5_probs[1],
+                      w0_given_g0_1=test_5_probs[2], h_0_given_g_0=test_5_probs[3], h_0_given_g1=test_5_probs[4],
+                      filename=f[1], threshold=0.0001)
 
-    print("likelihoodlist")
-    print(em_70.log_likelihood_list)
+    """
+        hw2_dataset_50.txt
+    """
+    em_50 = EM(g_0=0.7, w_0_given_g_0=0.8,
+               w0_given_g0_1=0.4, h_0_given_g_0=0.7, h_0_given_g1=0.3,
+               filename=f[2], threshold=0.0001)
 
-    em_70.log_likelihood_list = None
+    test_1_em_50 = EM(g_0=test_1_probs[0], w_0_given_g_0=test_1_probs[1],
+                      w0_given_g0_1=test_1_probs[2], h_0_given_g_0=test_1_probs[3], h_0_given_g1=test_1_probs[4],
+                      filename=f[2], threshold=0.0001)
 
-    em_100 = EM(gender_0=0.7, weight_0_given_gender_0=0.8,
-                weight_0_given_gender_1=0.4, height_0_given_gender_0=0.7, height_0_given_gender1=0.3,
-                filename=files[4], threshold=0.0001)
+    test_2_em_50 = EM(g_0=test_2_probs[0], w_0_given_g_0=test_2_probs[1],
+                      w0_given_g0_1=test_2_probs[2], h_0_given_g_0=test_2_probs[3], h_0_given_g1=test_2_probs[4],
+                      filename=f[2], threshold=0.0001)
 
-    print("likelihoodlist")
-    print(em_100.log_likelihood_list)
-    em_100.log_likelihood_list = None
+    test_3_em_50 = EM(g_0=test_3_probs[0], w_0_given_g_0=test_3_probs[1],
+                      w0_given_g0_1=test_3_probs[2], h_0_given_g_0=test_3_probs[3], h_0_given_g1=test_3_probs[4],
+                      filename=f[2], threshold=0.0001)
+
+    test_4_em_50 = EM(g_0=test_4_probs[0], w_0_given_g_0=test_4_probs[1],
+                      w0_given_g0_1=test_4_probs[2], h_0_given_g_0=test_4_probs[3], h_0_given_g1=test_4_probs[4],
+                      filename=f[2], threshold=0.0001)
+
+    test_5_em_50 = EM(g_0=test_5_probs[0], w_0_given_g_0=test_5_probs[1],
+                      w0_given_g0_1=test_5_probs[2], h_0_given_g_0=test_5_probs[3], h_0_given_g1=test_5_probs[4],
+                      filename=f[2], threshold=0.0001)
+
+    """
+        hw2_dataset_70.txt
+    """
+    em_70 = EM(g_0=0.7, w_0_given_g_0=0.8,
+               w0_given_g0_1=0.4, h_0_given_g_0=0.7, h_0_given_g1=0.3,
+               filename=f[3], threshold=0.0001)
+
+    test_1_em_70 = EM(g_0=test_1_probs[0], w_0_given_g_0=test_1_probs[1],
+                      w0_given_g0_1=test_1_probs[2], h_0_given_g_0=test_1_probs[3], h_0_given_g1=test_1_probs[4],
+                      filename=f[3], threshold=0.0001)
+
+    test_2_em_70 = EM(g_0=test_2_probs[0], w_0_given_g_0=test_2_probs[1],
+                      w0_given_g0_1=test_2_probs[2], h_0_given_g_0=test_2_probs[3], h_0_given_g1=test_2_probs[4],
+                      filename=f[3], threshold=0.0001)
+
+    test_3_em_70 = EM(g_0=test_3_probs[0], w_0_given_g_0=test_3_probs[1],
+                      w0_given_g0_1=test_3_probs[2], h_0_given_g_0=test_3_probs[3], h_0_given_g1=test_3_probs[4],
+                      filename=f[3], threshold=0.0001)
+
+    test_4_em_70 = EM(g_0=test_4_probs[0], w_0_given_g_0=test_4_probs[1],
+                      w0_given_g0_1=test_4_probs[2], h_0_given_g_0=test_4_probs[3], h_0_given_g1=test_4_probs[4],
+                      filename=f[3], threshold=0.0001)
+
+    test_5_em_70 = EM(g_0=test_5_probs[0], w_0_given_g_0=test_5_probs[1],
+                      w0_given_g0_1=test_5_probs[2], h_0_given_g_0=test_5_probs[3], h_0_given_g1=test_5_probs[4],
+                      filename=f[3], threshold=0.0001)
+
+    """
+        hw2_dataset_100.txt
+    """
+    em_100 = EM(g_0=0.7, w_0_given_g_0=0.8,
+                w0_given_g0_1=0.4, h_0_given_g_0=0.7, h_0_given_g1=0.3,
+                filename=f[4], threshold=0.0001)
+
+    test_1_em_100 = EM(g_0=test_1_probs[0], w_0_given_g_0=test_1_probs[1],
+                       w0_given_g0_1=test_1_probs[2], h_0_given_g_0=test_1_probs[3], h_0_given_g1=test_1_probs[4],
+                       filename=f[4], threshold=0.0001)
+
+    test_2_em_100 = EM(g_0=test_2_probs[0], w_0_given_g_0=test_2_probs[1],
+                       w0_given_g0_1=test_2_probs[2], h_0_given_g_0=test_2_probs[3], h_0_given_g1=test_2_probs[4],
+                       filename=f[4], threshold=0.0001)
+
+    test_3_em_100 = EM(g_0=test_3_probs[0], w_0_given_g_0=test_3_probs[1],
+                       w0_given_g0_1=test_3_probs[2], h_0_given_g_0=test_3_probs[3], h_0_given_g1=test_3_probs[4],
+                       filename=f[4], threshold=0.0001)
+
+    test_4_em_100 = EM(g_0=test_4_probs[0], w_0_given_g_0=test_4_probs[1],
+                       w0_given_g0_1=test_4_probs[2], h_0_given_g_0=test_4_probs[3], h_0_given_g1=test_4_probs[4],
+                       filename=f[4], threshold=0.0001)
+
+    test_5_em_100 = EM(g_0=test_5_probs[0], w_0_given_g_0=test_5_probs[1],
+                       w0_given_g0_1=test_5_probs[2], h_0_given_g_0=test_5_probs[3], h_0_given_g1=test_5_probs[4],
+                       filename=f[4], threshold=0.0001)
+    ####################################################################
+    # For 10
+
+    # Tests for hw
 
 
 if __name__ == '__main__':
