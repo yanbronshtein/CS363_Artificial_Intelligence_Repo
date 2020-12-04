@@ -46,7 +46,7 @@ class EM:
         self.threshold = threshold  # Threshold for convergence testing
         self.iterations = 0  # Stores the number of iterations of the EM algorithm
         self.log_likelihood_list = list()  # List to store log_likelihoods for a given iteration of EM
-        sys.setrecursionlimit(2000)  # Recursion limit necessary to avoid the error: "RecursionError:
+        # sys.setrecursionlimit(2000)  # Recursion limit necessary to avoid the error: "RecursionError:
         # maximum recursion depth exceeded while calling a Python object"
 
         self.known_data_options = [
@@ -92,15 +92,15 @@ class EM:
         ]
 
         # Calculate the first log probability and append to log_likelihood list
-        log_prob = 0
-        for key in self.theta_dict:
-            log_prob += math.log(self.theta_dict[key])
-        self.log_likelihood_list.append(log_prob)
+        # log_prob = 0
+        # for key in self.theta_dict:
+        #     log_prob += math.log(self.theta_dict[key])
+        # self.log_likelihood_list.append(log_prob)
 
         self.filename = filename
         self.m_step(self.theta_dict, self.filename)  # Call m_step to begin the algorithm
 
-    def e_step(self, theta_dict, filename):
+    def e_step(self, data_dict, theta_dict):
         """
         This method calculates the expectation for the current step to be used during the m-step using the following
         formulas
@@ -112,7 +112,7 @@ class EM:
         :param filename: Name of file to be parsed
         :return: Dictionary of expected values
         """
-        data_dict = parse_data(filename)
+        # data_dict = parse_data(filename)
         expected_data_dict = data_dict.copy()  # At this point contains the current frequencies for tuples
         # All possible missing data tuples
         entry_options = [
@@ -206,15 +206,19 @@ class EM:
         :param filename:
         :return:
         """
-        self.iterations += 1
-        expected_data_dict = self.e_step(theta_dict, filename)  # Calculate the expectations
+        # self.iterations += 1
+        data_dict = parse_data(filename)
+        expected_data_dict = self.e_step(data_dict, theta_dict)  # Calculate the expectations
 
         # Computer the new parameters
         new_param_dict = self.compute_new_params(expected_data_dict=expected_data_dict, new_param_dict=dict(),
                                                  op_index=-1)
 
         # Check if it is time to halt the EM algorithm. Call print_em_results() if that is the case
-        has_converged = self.has_converged(theta_dict, new_param_dict, self.threshold)
+
+        self.iterations += 1
+
+        has_converged = self.has_converged(data_dict, theta_dict, new_param_dict, self.threshold)
         if has_converged:
             self.print_em_results(new_param_dict)
         else:
@@ -231,10 +235,11 @@ class EM:
         """
         n = 0
         d = 0
-        if op_index + 1 == len(self.operations):
+        if op_index + 1 >= len(self.operations):
             return new_param_dict
 
         op_index += 1
+
         for key in expected_data_dict:
             # If the first element is '-' we are looking at missing data; skip
             if key[0] == '-':
@@ -269,27 +274,27 @@ class EM:
 
         if self.operations[op_index] == 'A':
             new_param_dict[self.known_data_options[0]] = n / d
-            new_param_dict[self.known_data_options[1]] = 1 - n / d
+            new_param_dict[self.known_data_options[1]] = 1 - new_param_dict[self.known_data_options[0]]
 
         elif self.operations[op_index] == 'B':
             new_param_dict[self.known_data_options[2]] = n / d
-            new_param_dict[self.known_data_options[3]] = 1 - n / d
+            new_param_dict[self.known_data_options[3]] = 1 - new_param_dict[self.known_data_options[2]]
 
         elif self.operations[op_index] == 'C':
             new_param_dict[self.known_data_options[4]] = n / d
-            new_param_dict[self.known_data_options[5]] = 1 - n / d
+            new_param_dict[self.known_data_options[5]] = 1 - new_param_dict[self.known_data_options[4]]
 
         elif self.operations[op_index] == 'D':
             new_param_dict[self.known_data_options[6]] = n / d
-            new_param_dict[self.known_data_options[7]] = 1 - n / d
+            new_param_dict[self.known_data_options[7]] = 1 - new_param_dict[self.known_data_options[6]]
 
         elif self.operations[op_index] == 'E':
             new_param_dict[self.known_data_options[8]] = n / d
-            new_param_dict[self.known_data_options[9]] = 1 - n / d
+            new_param_dict[self.known_data_options[9]] = 1 - new_param_dict[self.known_data_options[8]]
 
         return self.compute_new_params(expected_data_dict, new_param_dict, op_index)
 
-    def has_converged(self, curr_param_dict, new_param_dict, threshold):
+    def has_converged(self, data_dict, curr_param_dict, new_param_dict, threshold):
         """
         This method determines whether to stop the EM algorithm. It calculates the difference of log_likelihoods
         between the current learned parameters and the newly learned parameters.
@@ -299,19 +304,58 @@ class EM:
         :param threshold: Threshold provided by the user for halting EM algorithm
         :return: True if it is time to halt the EM algorithm and False otherwise
         """
+
+        # print("iteration#:", self.iterations)
+        # print("curr_param_dict")
+        # print(curr_param_dict)
+
+        # print("new_param_dict")
+        # print(new_param_dict)
         log_likelihood_curr_param = 0
         log_likelihood_new_param = 0
-        for key in curr_param_dict:
-            if curr_param_dict[key] == 0.0 or new_param_dict[key] == 0.0:
-                continue
+        for key in data_dict:
+            g, w, h = key
+            prob_using_curr_param_dict = 0
+            prob_using_new_param_dict = 0
+            # if key is ('-', W, H) then calculate log(P(W,H))
+            if g == '-':
+                # P(W,H) = sum_of_G P(G) * P(W|G) * P(H|G) using probabilities from the previous probability dict
+                prob_using_curr_param_dict += curr_param_dict[('0', 'x', 'x')] * curr_param_dict[('0', w, 'x')] * \
+                                              curr_param_dict[('0', 'x', h)]
+                prob_using_curr_param_dict += curr_param_dict[('1', 'x', 'x')] * curr_param_dict[('1', w, 'x')] * \
+                                              curr_param_dict[('1', 'x', h)]
+                # P(W,H) = sum_of_G P(G) * P(W|G) * P(H|G) using probabilities from the new probability dict
+                prob_using_new_param_dict += new_param_dict[('0', 'x', 'x')] * new_param_dict[('0', w, 'x')] * \
+                                             new_param_dict[('0', 'x', h)]
+                prob_using_new_param_dict += new_param_dict[('1', 'x', 'x')] * new_param_dict[('1', w, 'x')] * \
+                                             new_param_dict[('1', 'x', h)]
+
+            # else key is a complete data (G,W,H) then calculate log(P(G,W,H))
             else:
-                log_likelihood_curr_param += math.log(curr_param_dict[key])
-                log_likelihood_new_param += math.log(new_param_dict[key])
+                # P(G,W,H) = P(G) * P(W|G) * P(H|G) using probabilities from the previous probability dict
+                prob_using_curr_param_dict = curr_param_dict[(g, 'x', 'x')] * curr_param_dict[(g, w, 'x')] * \
+                                             curr_param_dict[(g, 'x', h)]
+                # P(G,W,H) = P(G) * P(W|G) * P(H|G) using probabilities from the new probability dict
+                prob_using_new_param_dict = new_param_dict[(g, 'x', 'x')] * new_param_dict[(g, w, 'x')] * \
+                                            new_param_dict[(g, 'x', h)]
+                # add log(P(G,W,H)) to the total log probabilities
+
+            # add log(P(W,H)) to the total log probabilities
+            log_likelihood_curr_param += math.log(prob_using_curr_param_dict) * data_dict[key]
+            log_likelihood_new_param += math.log(prob_using_new_param_dict) * data_dict[key]
+
+        if self.iterations == 1:
+            self.log_likelihood_list.append(log_likelihood_curr_param)
 
         self.log_likelihood_list.append(log_likelihood_new_param)
 
+        # print("prob_using_curr_param_dict", prob_using_curr_param_dict)
+
         delta_log_likelihood = math.fabs(log_likelihood_curr_param - log_likelihood_new_param)
-        if delta_log_likelihood < threshold:
+        # print("log_likelihood_curr_param", log_likelihood_curr_param)
+        # print("log_likelihood_new_param", log_likelihood_new_param)
+        # print("delta:", delta_log_likelihood)
+        if delta_log_likelihood <= threshold:
             return True
         else:
             return False
@@ -404,29 +448,45 @@ def main():
     Create an EM() object for each of the hw2dataset files
     """
 
-    # 10% missing
-    EM(gender_0=0.7, weight_0_given_gender_0=0.8,
-       weight_0_given_gender_1=0.4, height_0_given_gender_0=0.7, height_0_given_gender1=0.3,
-       filename=files[0], threshold=0.0001)
-    # 30% missing
-    EM(gender_0=0.7, weight_0_given_gender_0=0.8,
-       weight_0_given_gender_1=0.4, height_0_given_gender_0=0.7, height_0_given_gender1=0.3,
-       filename=files[1], threshold=0.0001)
+    em_10 = EM(gender_0=0.7, weight_0_given_gender_0=0.8,
+               weight_0_given_gender_1=0.4, height_0_given_gender_0=0.7, height_0_given_gender1=0.3,
+               filename=files[0], threshold=0.0001)
 
-    # 50% missing
-    EM(gender_0=0.7, weight_0_given_gender_0=0.8,
-       weight_0_given_gender_1=0.4, height_0_given_gender_0=0.7, height_0_given_gender1=0.3,
-       filename=files[2], threshold=0.0001)
+    print("likelihoodlist")
+    print(em_10.log_likelihood_list)
+    em_10.log_likelihood_list = None
+    em_30 = EM(gender_0=0.7, weight_0_given_gender_0=0.8,
+               weight_0_given_gender_1=0.4, height_0_given_gender_0=0.7, height_0_given_gender1=0.3,
+               filename=files[1], threshold=0.0001)
 
-    # 70% missing
-    EM(gender_0=0.7, weight_0_given_gender_0=0.8,
-       weight_0_given_gender_1=0.4, height_0_given_gender_0=0.7, height_0_given_gender1=0.3,
-       filename=files[3], threshold=0.0001)
+    print("likelihoodlist")
+    print(em_30.log_likelihood_list)
+    em_30.log_likelihood_list = None
 
-    # 100% missing
-    EM(gender_0=0.7, weight_0_given_gender_0=0.8,
-       weight_0_given_gender_1=0.4, height_0_given_gender_0=0.7, height_0_given_gender1=0.3,
-       filename=files[4], threshold=0.0001)
+    em_50 = EM(gender_0=0.7, weight_0_given_gender_0=0.8,
+               weight_0_given_gender_1=0.4, height_0_given_gender_0=0.7, height_0_given_gender1=0.3,
+               filename=files[2], threshold=0.0001)
+
+    print("likelihoodlist")
+    print(em_50.log_likelihood_list)
+    em_50.log_likelihood_list = None
+
+    em_70 = EM(gender_0=0.7, weight_0_given_gender_0=0.8,
+               weight_0_given_gender_1=0.4, height_0_given_gender_0=0.7, height_0_given_gender1=0.3,
+               filename=files[3], threshold=0.0001)
+
+    print("likelihoodlist")
+    print(em_70.log_likelihood_list)
+
+    em_70.log_likelihood_list = None
+
+    em_100 = EM(gender_0=0.7, weight_0_given_gender_0=0.8,
+                weight_0_given_gender_1=0.4, height_0_given_gender_0=0.7, height_0_given_gender1=0.3,
+                filename=files[4], threshold=0.0001)
+
+    print("likelihoodlist")
+    print(em_100.log_likelihood_list)
+    em_100.log_likelihood_list = None
 
 
 if __name__ == '__main__':
