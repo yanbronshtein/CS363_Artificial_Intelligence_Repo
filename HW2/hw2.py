@@ -32,7 +32,7 @@ This class implements Expectation Maximization
 class EM:
 
     def __init__(self, g_0, w_0_given_g_0, w0_given_g0_1, h_0_given_g_0,
-                 h_0_given_g1, filename: str, threshold, make_graph=True):
+                 h_0_given_g1, filename: str, threshold, make_graph=False):
         """
         Default constructor for EM class
         :param g_0:  P(Gender=0)
@@ -48,7 +48,6 @@ class EM:
         self.threshold = threshold  # Threshold for convergence testing
         self.iterations = 0  # Stores the number of iterations of the EM algorithm
         self.log_likelihood_list = []  # List to store log_likelihoods for a given iteration of EM
-        # maximum recursion depth exceeded while calling a Python object"
 
         self.known_data_options = [
             ('0', 'x', 'x'),
@@ -198,8 +197,8 @@ class EM:
         """
         This method computes
         :param theta_dict: dictionary of current parameters to be updated in the e_step
-        :param filename:
-        :return:
+        :param filename: data set
+        :return:recursive call to m_step or call to print results
         """
         # self.iterations += 1
         data_dict = parse_data(filename)
@@ -460,7 +459,7 @@ def main():
     """
     em_10 = EM(g_0=0.7, w_0_given_g_0=0.8,
                w0_given_g0_1=0.4, h_0_given_g_0=0.7, h_0_given_g1=0.3,
-               filename=f[0], threshold=0.0001)
+               filename=f[0], threshold=0.0001, make_graph=True)
     # Tests for hw2dataset_10.txt
     test_1_em_10 = EM(g_0=test_1_probs[0], w_0_given_g_0=test_1_probs[1],
                       w0_given_g0_1=test_1_probs[2], h_0_given_g_0=test_1_probs[3], h_0_given_g1=test_1_probs[4],
@@ -488,7 +487,7 @@ def main():
 
     em_30 = EM(g_0=0.7, w_0_given_g_0=0.8,
                w0_given_g0_1=0.4, h_0_given_g_0=0.7, h_0_given_g1=0.3,
-               filename=f[1], threshold=0.0001)
+               filename=f[1], threshold=0.0001, make_graph=True)
 
     test_1_em_30 = EM(g_0=test_1_probs[0], w_0_given_g_0=test_1_probs[1],
                       w0_given_g0_1=test_1_probs[2], h_0_given_g_0=test_1_probs[3], h_0_given_g1=test_1_probs[4],
@@ -515,7 +514,7 @@ def main():
     """
     em_50 = EM(g_0=0.7, w_0_given_g_0=0.8,
                w0_given_g0_1=0.4, h_0_given_g_0=0.7, h_0_given_g1=0.3,
-               filename=f[2], threshold=0.0001)
+               filename=f[2], threshold=0.0001, make_graph=True)
 
     test_1_em_50 = EM(g_0=test_1_probs[0], w_0_given_g_0=test_1_probs[1],
                       w0_given_g0_1=test_1_probs[2], h_0_given_g_0=test_1_probs[3], h_0_given_g1=test_1_probs[4],
@@ -542,7 +541,7 @@ def main():
     """
     em_70 = EM(g_0=0.7, w_0_given_g_0=0.8,
                w0_given_g0_1=0.4, h_0_given_g_0=0.7, h_0_given_g1=0.3,
-               filename=f[3], threshold=0.0001)
+               filename=f[3], threshold=0.0001, make_graph=True)
 
     test_1_em_70 = EM(g_0=test_1_probs[0], w_0_given_g_0=test_1_probs[1],
                       w0_given_g0_1=test_1_probs[2], h_0_given_g_0=test_1_probs[3], h_0_given_g1=test_1_probs[4],
@@ -569,7 +568,7 @@ def main():
     """
     em_100 = EM(g_0=0.7, w_0_given_g_0=0.8,
                 w0_given_g0_1=0.4, h_0_given_g_0=0.7, h_0_given_g1=0.3,
-                filename=f[4], threshold=0.0001)
+                filename=f[4], threshold=0.0001, make_graph=True)
 
     test_1_em_100 = EM(g_0=test_1_probs[0], w_0_given_g_0=test_1_probs[1],
                        w0_given_g0_1=test_1_probs[2], h_0_given_g_0=test_1_probs[3], h_0_given_g1=test_1_probs[4],
@@ -590,10 +589,7 @@ def main():
     test_5_em_100 = EM(g_0=test_5_probs[0], w_0_given_g_0=test_5_probs[1],
                        w0_given_g0_1=test_5_probs[2], h_0_given_g_0=test_5_probs[3], h_0_given_g1=test_5_probs[4],
                        filename=f[4], threshold=0.0001)
-    ####################################################################
-    # For 10
 
-    # Tests for hw
 
 
 if __name__ == '__main__':
