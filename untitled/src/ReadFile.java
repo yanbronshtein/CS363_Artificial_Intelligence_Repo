@@ -28,23 +28,5 @@ public class ReadFile {
         }
         return dataMap;
     }
-    public static void main(String[] args) {
 
-        parseData(new File("hw2dataset_10.txt"));
-//        testMethod()
-    }
-
-
-    /**
-     * This method teaches you how to code
-     *
-     * @param a yoyo var
-     * @param b asdfasdf
-     * @param casdfasdfasdfasdf
-     * @param d asdfasdfasdfasdfasdf
-     * @return dfasdfsasdfasdf
-     */
-    private static int testMethod(int a, int b, int c, int d) {
-        return 3;
-    }
 }
