@@ -17,6 +17,8 @@ import math
 import random
 
 # Importing non-standard libraries that require pip to install
+from typing import List
+
 try:
     import matplotlib.pyplot as plt
     import pandas as pd
@@ -200,7 +202,6 @@ class EM:
         :param filename: data set
         :return:recursive call to m_step or call to print results
         """
-        # self.iterations += 1
         data_dict = parse_data(filename)
         expected_data_dict = self.e_step(data_dict, theta_dict)  # Calculate the expectations
 
@@ -356,13 +357,12 @@ class EM:
         weight_given_gender_df = pd.DataFrame()
         height_given_gender_df = pd.DataFrame()
 
-        print("filename:", self.filename)
         print("total iterations:", self.iterations)
         print("----------------------------------------Gender Table----------------------------------------")
         gender_df["P(Gender=0)"] = [param_dict[('0', 'x', 'x')]]
         gender_df["P(Gender=1)"] = [param_dict[('1', 'x', 'x')]]
         print(gender_df.to_string(index=False))
-        print("--------------------------------------------------------------------------------------------")
+        print("\n")
         print("----------------------------------------Weight|Gender Table---------------------------------")
 
         weight_given_gender_df["P(Weight=0|Gender=0)"] = [param_dict[('0', '0', 'x')]]
@@ -370,8 +370,7 @@ class EM:
         weight_given_gender_df["P(Weight=0|Gender=1)"] = [param_dict[('1', '0', 'x')]]
         weight_given_gender_df["P(Weight=1|Gender=1)"] = [param_dict[('1', '1', 'x')]]
         print(weight_given_gender_df.to_string(index=False))
-        print("--------------------------------------------------------------------------------------------")
-
+        print("\n")
         print("----------------------------------------Height|Gender Table---------------------------------")
 
         height_given_gender_df["P(Height=0|Gender=0)"] = [param_dict[('0', 'x', '0')]]
@@ -379,9 +378,9 @@ class EM:
         height_given_gender_df["P(Height=0|Gender=1)"] = [param_dict[('1', 'x', '0')]]
         height_given_gender_df["P(Height=1|Gender=1)"] = [param_dict[('1', 'x', '1')]]
         print(height_given_gender_df.to_string(index=False))
-
-        print(
-            "--------------------------------------------------------------------------------------------")
+        print("\n")
+        # print(
+        #     "--------------------------------------------------------------------------------------------")
         if self.make_graph:
             self.generate_graph()
 
@@ -431,6 +430,22 @@ def generate_probabilities():
     return x
 
 
+def create_prior_prob_df(list_of_prob: List[float]):
+    """
+    Given list of 5 probabilities
+    create the data frame and return the stringified version of it
+    :param list_of_prob: list of 5 probabilities
+    :return: Stringified dataframe
+    """
+    df = pd.DataFrame()
+    df["P(Gender=0)"] = [list_of_prob[0]]
+    df["P(Weight=0|Gender=0)"] = [list_of_prob[1]]
+    df["P(Weight=0|Gender=1)"] = [list_of_prob[2]]
+    df["P(Height=0|Gender=0)"] = [list_of_prob[3]]
+    df["P(Height=0|Gender=1)"] = [list_of_prob[4]]
+    return df.to_string(index=False)
+
+
 def main():
     # List of files
     f = [
@@ -439,14 +454,19 @@ def main():
         'hw2dataset_50.txt',
         'hw2dataset_70.txt',
         'hw2dataset_100.txt'
-
     ]
 
     """
+    Give prior probabilities
+    """
+    given_probs = [0.7, 0.8, 0.4, 0.7, 0.3]
+    """
        Random probabilities
-       """
+    """
     test_1_probs = generate_probabilities()
     test_2_probs = generate_probabilities()
+
+
     """
     Non-random probabilities
     """
@@ -455,56 +475,95 @@ def main():
     test_5_probs = [0.5, 0.5, 0.5, 0.5, 0.5]
 
     """
+    Prior Probability Type
+    """
+    print_str = [
+        "Provided",
+        "Test Case #1",
+        "Test Case #2",
+        "Test Case #3",
+        "Test Case #4",
+        "Test Case #5",
+
+    ]
+    """
     hw2_dataset_10.txt
     """
-    em_10 = EM(g_0=0.7, w_0_given_g_0=0.8,
-               w0_given_g0_1=0.4, h_0_given_g_0=0.7, h_0_given_g1=0.3,
+
+    print("filename", f[0])
+    print(print_str[0])
+    print(create_prior_prob_df(given_probs))
+    em_10 = EM(g_0=given_probs[0], w_0_given_g_0=given_probs[1],
+               w0_given_g0_1=given_probs[2], h_0_given_g_0=given_probs[3], h_0_given_g1=given_probs[4],
                filename=f[0], threshold=0.0001, make_graph=True)
-    # Tests for hw2dataset_10.txt
+
+    print(print_str[1])
+    print(create_prior_prob_df(test_1_probs))
     test_1_em_10 = EM(g_0=test_1_probs[0], w_0_given_g_0=test_1_probs[1],
                       w0_given_g0_1=test_1_probs[2], h_0_given_g_0=test_1_probs[3], h_0_given_g1=test_1_probs[4],
                       filename=f[0], threshold=0.0001)
 
+    print(print_str[2])
+    print(create_prior_prob_df(test_2_probs))
     test_2_em_10 = EM(g_0=test_2_probs[0], w_0_given_g_0=test_2_probs[1],
                       w0_given_g0_1=test_2_probs[2], h_0_given_g_0=test_2_probs[3], h_0_given_g1=test_2_probs[4],
                       filename=f[0], threshold=0.0001)
 
+    print(print_str[3])
+    print(create_prior_prob_df(test_3_probs))
     test_3_em_10 = EM(g_0=test_3_probs[0], w_0_given_g_0=test_3_probs[1],
                       w0_given_g0_1=test_3_probs[2], h_0_given_g_0=test_3_probs[3], h_0_given_g1=test_3_probs[4],
                       filename=f[0], threshold=0.0001)
 
+    print(print_str[4])
+    print(create_prior_prob_df(test_4_probs))
     test_4_em_10 = EM(g_0=test_4_probs[0], w_0_given_g_0=test_4_probs[1],
                       w0_given_g0_1=test_4_probs[2], h_0_given_g_0=test_4_probs[3], h_0_given_g1=test_4_probs[4],
                       filename=f[0], threshold=0.0001)
 
+    print(print_str[5])
+    print(create_prior_prob_df(test_5_probs))
     test_5_em_10 = EM(g_0=test_5_probs[0], w_0_given_g_0=test_5_probs[1],
                       w0_given_g0_1=test_5_probs[2], h_0_given_g_0=test_5_probs[3], h_0_given_g1=test_5_probs[4],
                       filename=f[0], threshold=0.0001)
 
     """
-        hw2_dataset_30.txt
+         hw2_dataset_30.txt
     """
-
+    print("****************************************************************************************************")
+    print("filename", f[1])
+    print(print_str[0])
+    print(create_prior_prob_df(given_probs))
     em_30 = EM(g_0=0.7, w_0_given_g_0=0.8,
                w0_given_g0_1=0.4, h_0_given_g_0=0.7, h_0_given_g1=0.3,
                filename=f[1], threshold=0.0001, make_graph=True)
 
+    print(print_str[1])
+    print(create_prior_prob_df(test_1_probs))
     test_1_em_30 = EM(g_0=test_1_probs[0], w_0_given_g_0=test_1_probs[1],
                       w0_given_g0_1=test_1_probs[2], h_0_given_g_0=test_1_probs[3], h_0_given_g1=test_1_probs[4],
                       filename=f[1], threshold=0.0001)
 
+    print(print_str[2])
+    print(create_prior_prob_df(test_2_probs))
     test_2_em_30 = EM(g_0=test_2_probs[0], w_0_given_g_0=test_2_probs[1],
                       w0_given_g0_1=test_2_probs[2], h_0_given_g_0=test_2_probs[3], h_0_given_g1=test_2_probs[4],
                       filename=f[1], threshold=0.0001)
 
+    print(print_str[3])
+    print(create_prior_prob_df(test_3_probs))
     test_3_em_30 = EM(g_0=test_3_probs[0], w_0_given_g_0=test_3_probs[1],
                       w0_given_g0_1=test_3_probs[2], h_0_given_g_0=test_3_probs[3], h_0_given_g1=test_3_probs[4],
                       filename=f[1], threshold=0.0001)
 
+    print(print_str[4])
+    print(create_prior_prob_df(test_4_probs))
     test_4_em_30 = EM(g_0=test_4_probs[0], w_0_given_g_0=test_4_probs[1],
                       w0_given_g0_1=test_4_probs[2], h_0_given_g_0=test_4_probs[3], h_0_given_g1=test_4_probs[4],
                       filename=f[1], threshold=0.0001)
 
+    print(print_str[5])
+    print(create_prior_prob_df(test_5_probs))
     test_5_em_30 = EM(g_0=test_5_probs[0], w_0_given_g_0=test_5_probs[1],
                       w0_given_g0_1=test_5_probs[2], h_0_given_g_0=test_5_probs[3], h_0_given_g1=test_5_probs[4],
                       filename=f[1], threshold=0.0001)
@@ -512,26 +571,40 @@ def main():
     """
         hw2_dataset_50.txt
     """
+    print("****************************************************************************************************")
+    print("filename", f[2])
+    print(print_str[0])
+    print(create_prior_prob_df(given_probs))
     em_50 = EM(g_0=0.7, w_0_given_g_0=0.8,
                w0_given_g0_1=0.4, h_0_given_g_0=0.7, h_0_given_g1=0.3,
                filename=f[2], threshold=0.0001, make_graph=True)
 
+    print(print_str[1])
+    print(create_prior_prob_df(test_1_probs))
     test_1_em_50 = EM(g_0=test_1_probs[0], w_0_given_g_0=test_1_probs[1],
                       w0_given_g0_1=test_1_probs[2], h_0_given_g_0=test_1_probs[3], h_0_given_g1=test_1_probs[4],
                       filename=f[2], threshold=0.0001)
 
+    print(print_str[2])
+    print(create_prior_prob_df(test_2_probs))
     test_2_em_50 = EM(g_0=test_2_probs[0], w_0_given_g_0=test_2_probs[1],
                       w0_given_g0_1=test_2_probs[2], h_0_given_g_0=test_2_probs[3], h_0_given_g1=test_2_probs[4],
                       filename=f[2], threshold=0.0001)
 
+    print(print_str[3])
+    print(create_prior_prob_df(test_3_probs))
     test_3_em_50 = EM(g_0=test_3_probs[0], w_0_given_g_0=test_3_probs[1],
                       w0_given_g0_1=test_3_probs[2], h_0_given_g_0=test_3_probs[3], h_0_given_g1=test_3_probs[4],
                       filename=f[2], threshold=0.0001)
 
+    print(print_str[4])
+    print(create_prior_prob_df(test_4_probs))
     test_4_em_50 = EM(g_0=test_4_probs[0], w_0_given_g_0=test_4_probs[1],
                       w0_given_g0_1=test_4_probs[2], h_0_given_g_0=test_4_probs[3], h_0_given_g1=test_4_probs[4],
                       filename=f[2], threshold=0.0001)
 
+    print(print_str[5])
+    print(create_prior_prob_df(test_5_probs))
     test_5_em_50 = EM(g_0=test_5_probs[0], w_0_given_g_0=test_5_probs[1],
                       w0_given_g0_1=test_5_probs[2], h_0_given_g_0=test_5_probs[3], h_0_given_g1=test_5_probs[4],
                       filename=f[2], threshold=0.0001)
@@ -539,26 +612,41 @@ def main():
     """
         hw2_dataset_70.txt
     """
+    print("****************************************************************************************************")
+
+    print("filename", f[3])
+    print(print_str[0])
+    print(create_prior_prob_df(given_probs))
     em_70 = EM(g_0=0.7, w_0_given_g_0=0.8,
                w0_given_g0_1=0.4, h_0_given_g_0=0.7, h_0_given_g1=0.3,
                filename=f[3], threshold=0.0001, make_graph=True)
 
+    print(print_str[1])
+    print(create_prior_prob_df(test_1_probs))
     test_1_em_70 = EM(g_0=test_1_probs[0], w_0_given_g_0=test_1_probs[1],
                       w0_given_g0_1=test_1_probs[2], h_0_given_g_0=test_1_probs[3], h_0_given_g1=test_1_probs[4],
                       filename=f[3], threshold=0.0001)
 
+    print(print_str[2])
+    print(create_prior_prob_df(test_2_probs))
     test_2_em_70 = EM(g_0=test_2_probs[0], w_0_given_g_0=test_2_probs[1],
                       w0_given_g0_1=test_2_probs[2], h_0_given_g_0=test_2_probs[3], h_0_given_g1=test_2_probs[4],
                       filename=f[3], threshold=0.0001)
 
+    print(print_str[3])
+    print(create_prior_prob_df(test_3_probs))
     test_3_em_70 = EM(g_0=test_3_probs[0], w_0_given_g_0=test_3_probs[1],
                       w0_given_g0_1=test_3_probs[2], h_0_given_g_0=test_3_probs[3], h_0_given_g1=test_3_probs[4],
                       filename=f[3], threshold=0.0001)
 
+    print(print_str[4])
+    print(create_prior_prob_df(test_4_probs))
     test_4_em_70 = EM(g_0=test_4_probs[0], w_0_given_g_0=test_4_probs[1],
                       w0_given_g0_1=test_4_probs[2], h_0_given_g_0=test_4_probs[3], h_0_given_g1=test_4_probs[4],
                       filename=f[3], threshold=0.0001)
 
+    print(print_str[5])
+    print(create_prior_prob_df(test_5_probs))
     test_5_em_70 = EM(g_0=test_5_probs[0], w_0_given_g_0=test_5_probs[1],
                       w0_given_g0_1=test_5_probs[2], h_0_given_g_0=test_5_probs[3], h_0_given_g1=test_5_probs[4],
                       filename=f[3], threshold=0.0001)
@@ -566,30 +654,43 @@ def main():
     """
         hw2_dataset_100.txt
     """
+    print("****************************************************************************************************")
+    print("filename", f[4])
+    print(print_str[0])
+    print(create_prior_prob_df(given_probs))
     em_100 = EM(g_0=0.7, w_0_given_g_0=0.8,
                 w0_given_g0_1=0.4, h_0_given_g_0=0.7, h_0_given_g1=0.3,
                 filename=f[4], threshold=0.0001, make_graph=True)
 
+    print(print_str[1])
+    print(create_prior_prob_df(test_1_probs))
     test_1_em_100 = EM(g_0=test_1_probs[0], w_0_given_g_0=test_1_probs[1],
                        w0_given_g0_1=test_1_probs[2], h_0_given_g_0=test_1_probs[3], h_0_given_g1=test_1_probs[4],
                        filename=f[4], threshold=0.0001)
 
+    print(print_str[2])
+    print(create_prior_prob_df(test_2_probs))
     test_2_em_100 = EM(g_0=test_2_probs[0], w_0_given_g_0=test_2_probs[1],
                        w0_given_g0_1=test_2_probs[2], h_0_given_g_0=test_2_probs[3], h_0_given_g1=test_2_probs[4],
                        filename=f[4], threshold=0.0001)
 
+    print(print_str[3])
+    print(create_prior_prob_df(test_3_probs))
     test_3_em_100 = EM(g_0=test_3_probs[0], w_0_given_g_0=test_3_probs[1],
                        w0_given_g0_1=test_3_probs[2], h_0_given_g_0=test_3_probs[3], h_0_given_g1=test_3_probs[4],
                        filename=f[4], threshold=0.0001)
 
+    print(print_str[4])
+    print(create_prior_prob_df(test_4_probs))
     test_4_em_100 = EM(g_0=test_4_probs[0], w_0_given_g_0=test_4_probs[1],
                        w0_given_g0_1=test_4_probs[2], h_0_given_g_0=test_4_probs[3], h_0_given_g1=test_4_probs[4],
                        filename=f[4], threshold=0.0001)
 
+    print(print_str[5])
+    print(create_prior_prob_df(test_5_probs))
     test_5_em_100 = EM(g_0=test_5_probs[0], w_0_given_g_0=test_5_probs[1],
                        w0_given_g0_1=test_5_probs[2], h_0_given_g_0=test_5_probs[3], h_0_given_g1=test_5_probs[4],
                        filename=f[4], threshold=0.0001)
-
 
 
 if __name__ == '__main__':
