@@ -5,25 +5,20 @@ import java.util.Scanner; // Import the Scanner class to read text files
 
 public class ReadFile {
 
-    private static HashMap<String, Integer> parseData(File file) {
-        HashMap<String, Integer> dataMap = new HashMap<>();
+    static HashMap<String, Double> parseData(File file) {
+        HashMap<String, Double> dataMap = new HashMap<>();
         try {
             Scanner myReader = new Scanner(file);
             while (myReader.hasNextLine()) {
-                String line = myReader.nextLine();
-                String[] tokenized_Line = line.trim().split("\\s+");
-                if (!tokenized_Line[0].equals("Gender")) {
-                    DataSetObj temp = new DataSetObj(tokenized_Line[0], tokenized_Line[1], tokenized_Line[2]);
-                    int frequency = 0;
-                    String tupleStr = temp.tupleStr;
-
-                    if (dataMap.containsKey(tupleStr)) {
-                        frequency = dataMap.get(tupleStr) + 1;
-                        dataMap.put(tupleStr, frequency);
-                    } else {
-                        dataMap.put(tupleStr, 1);
+                String line = myReader.nextLine().trim().replaceAll("\\s", ",");
+                if (!line.contains("Gender")) {
+                    double value = 0;
+                    if (dataMap.containsKey(line)) {
+                        value = dataMap.get(line) + 1;
+                        dataMap.put(line, value);
+                    }else {
+                        dataMap.put(line, 1.0);
                     }
-                    System.out.println(frequency);
                 }
             }
             myReader.close();
