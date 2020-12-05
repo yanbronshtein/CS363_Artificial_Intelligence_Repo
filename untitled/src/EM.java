@@ -1,19 +1,20 @@
 import java.io.File;
 import java.util.*;
 import java.util.Map.Entry;
-import java.util.stream.Collectors;
 
 public class EM {
 
     public int iterations = 0;
-
+    double threshold;
     public int[] ops = {1, 2, 3, 4, 5};
     public String[] knownData  = new String[10];
+    List<Double> logLikelihood = new ArrayList<>();
 
-    EM(double gender0, double weight0GivenGender0, double weight0GivenGender1, double height0GivenGender0, double height0GivenGender1, File filename){
+    EM(double gender0, double weight0GivenGender0, double weight0GivenGender1, double height0GivenGender0, double height0GivenGender1, File filename,
+       double threshold){
         //default constructor for EM class
         List<Double> logLikelihood = new ArrayList<>();
-
+        this.threshold = threshold;
         knownData[0] = "0,x,x";
         knownData[1] = "1,x,x";
         knownData[2] = "0,0,x";
@@ -25,26 +26,26 @@ public class EM {
         knownData[8] = "1,x,0";
         knownData[9] = "1,x,1";
 
-        HashMap<String, Double> thetaDict = new HashMap<>();
-        thetaDict.put(knownData[0], gender0);
-        thetaDict.put(knownData[1], gender0 - 1);
+        HashMap<String, Double> thetaMap = new HashMap<>();
+        thetaMap.put(knownData[0], gender0);
+        thetaMap.put(knownData[1], gender0 - 1);
 
-        thetaDict.put(knownData[2], weight0GivenGender0);
-        thetaDict.put(knownData[3], weight0GivenGender0 - 1);
+        thetaMap.put(knownData[2], weight0GivenGender0);
+        thetaMap.put(knownData[3], weight0GivenGender0 - 1);
 
-        thetaDict.put(knownData[4], weight0GivenGender1);
-        thetaDict.put(knownData[5], weight0GivenGender1 - 1);
+        thetaMap.put(knownData[4], weight0GivenGender1);
+        thetaMap.put(knownData[5], weight0GivenGender1 - 1);
 
-        thetaDict.put(knownData[6], height0GivenGender0);
-        thetaDict.put(knownData[7], height0GivenGender0 - 1);
+        thetaMap.put(knownData[6], height0GivenGender0);
+        thetaMap.put(knownData[7], height0GivenGender0 - 1);
 
-        thetaDict.put(knownData[8], height0GivenGender1);
-        thetaDict.put(knownData[9], height0GivenGender1 - 1);
+        thetaMap.put(knownData[8], height0GivenGender1);
+        thetaMap.put(knownData[9], height0GivenGender1 - 1);
 
 //        System.out.println(knownValues.get("1,x,1"));
 
-        mStep(thetaDict, filename);
-        thetaDict.forEach((key, value) -> System.out.println(key +" : " + value));
+        mStep(thetaMap, filename);
+        thetaMap.forEach((key, value) -> System.out.println(key +" : " + value));
 //        System.out.println(initialValues[0].toString().equals("0,x,x"));
 //        HashMap<String, Integer> dataMap = ReadFile.parseData(filename);
 //        HashMap<String, Integer> expectedData = new HashMap(dataMap);    //contains the current frequencies for tuples
@@ -58,14 +59,14 @@ public class EM {
         for (Map.Entry<String, Double> entry: dataMap.entrySet()) {
             newMap.put(entry.getKey(), entry.getValue());
         }
+        return newMap;
 
     }
 
-    HashMap<String, Double> eStep(HashMap<String, Double> dataMap, HashMap<String, Double> thetaDict){
-        HashMap<String, Double> expectedDataDict = cloneMap(dataMap);
+    HashMap<String, Double> eStep(HashMap<String, Double> dataMap, HashMap<String, Double> thetaMap){
+        HashMap<String, Double> expectedDataMap = cloneMap(dataMap);
 
-        double d = 0;
-        double n = 0;
+        double d = 0, n;
 
         final String[] entryOptions = {
                 "-,1,1",
@@ -76,96 +77,95 @@ public class EM {
 
         for(Map.Entry<String, Double> entry : dataMap.entrySet()) {
             String key = entry.getKey();
-            Double value = entry.getValue();
 
             if (key.equals(entryOptions[0])){
-                n = thetaDict.get("0,x,x") * thetaDict.get("0,1,x") * thetaDict.get("0,x,1");
-                d += thetaDict.get("0,x,x") * thetaDict.get("0,1,x") * thetaDict.get("0,x,1");
-                d += thetaDict.get("1,x,x") * thetaDict.get("1,1,x") * thetaDict.get("1,x,1");
+                n = thetaMap.get("0,x,x") * thetaMap.get("0,1,x") * thetaMap.get("0,x,1");
+                d += thetaMap.get("0,x,x") * thetaMap.get("0,1,x") * thetaMap.get("0,x,1");
+                d += thetaMap.get("1,x,x") * thetaMap.get("1,1,x") * thetaMap.get("1,x,1");
 
-                double tempVal = (n/d) * expectedDataDict.get("-,1,1");
-                if (expectedDataDict.containsKey("0,1,1")) {
-                    expectedDataDict.put("0,1,1", expectedDataDict.get("0,1,1") + tempVal);
+                double tempVal = (n/d) * expectedDataMap.get("-,1,1");
+                if (expectedDataMap.containsKey("0,1,1")) {
+                    expectedDataMap.put("0,1,1", expectedDataMap.get("0,1,1") + tempVal);
                 }else {
-                    expectedDataDict.put("0,1,1", tempVal);
+                    expectedDataMap.put("0,1,1", tempVal);
                 }
 
-                tempVal = (1 - (n/d)) * expectedDataDict.get("-,1,1");
-                if (expectedDataDict.containsKey("1,1,1")) {
+                tempVal = (1 - (n/d)) * expectedDataMap.get("-,1,1");
+                if (expectedDataMap.containsKey("1,1,1")) {
 
-                    expectedDataDict.put("1,1,1", expectedDataDict.get("0,1,1") + tempVal);
+                    expectedDataMap.put("1,1,1", expectedDataMap.get("0,1,1") + tempVal);
                 }else {
-                    expectedDataDict.put("0,1,1", tempVal);
+                    expectedDataMap.put("0,1,1", tempVal);
                 }
 
             }
 
             else if (key.equals(entryOptions[1])){
-                n = thetaDict.get("0,x,x") * thetaDict.get("0,1,x") * thetaDict.get("0,x,0");
-                d += thetaDict.get("0,x,x") * thetaDict.get("0,1,x") * thetaDict.get("0,x,0");
-                d += thetaDict.get("1,x,x") * thetaDict.get("1,1,x") * thetaDict.get("1,x,0");
+                n = thetaMap.get("0,x,x") * thetaMap.get("0,1,x") * thetaMap.get("0,x,0");
+                d += thetaMap.get("0,x,x") * thetaMap.get("0,1,x") * thetaMap.get("0,x,0");
+                d += thetaMap.get("1,x,x") * thetaMap.get("1,1,x") * thetaMap.get("1,x,0");
 
-                double tempVal = (n/d) * expectedDataDict.get("-,1,0");
-                if (expectedDataDict.containsKey("0,1,0")) {
-                    expectedDataDict.put("0,1,0", expectedDataDict.get("0,1,1") + tempVal);
+                double tempVal = (n/d) * expectedDataMap.get("-,1,0");
+                if (expectedDataMap.containsKey("0,1,0")) {
+                    expectedDataMap.put("0,1,0", expectedDataMap.get("0,1,1") + tempVal);
                 }else {
-                    expectedDataDict.put("0,1,0", tempVal);
+                    expectedDataMap.put("0,1,0", tempVal);
                 }
 
-                double tempVal2 = (1 - (n/d)) * expectedDataDict.get("-,1,0");
-                if (expectedDataDict.containsKey("1,1,0")) {
+                double tempVal2 = (1 - (n/d)) * expectedDataMap.get("-,1,0");
+                if (expectedDataMap.containsKey("1,1,0")) {
 
-                    expectedDataDict.put("1,1,0", expectedDataDict.get("1,1,1") + tempVal2);
+                    expectedDataMap.put("1,1,0", expectedDataMap.get("1,1,1") + tempVal2);
                 }else {
-                    expectedDataDict.put("1,1,0", tempVal2);
+                    expectedDataMap.put("1,1,0", tempVal2);
                 }
 
             }
             else if (key.equals(entryOptions[2])){
-                n = thetaDict.get("0,x,x") * thetaDict.get("0,0,x") * thetaDict.get("0,x,0");
-                d += thetaDict.get("0,x,x") * thetaDict.get("0,0,x") * thetaDict.get("0,x,0");
-                d += thetaDict.get("1,x,x") * thetaDict.get("1,0,x") * thetaDict.get("1,x,0");
+                n = thetaMap.get("0,x,x") * thetaMap.get("0,0,x") * thetaMap.get("0,x,0");
+                d += thetaMap.get("0,x,x") * thetaMap.get("0,0,x") * thetaMap.get("0,x,0");
+                d += thetaMap.get("1,x,x") * thetaMap.get("1,0,x") * thetaMap.get("1,x,0");
 
-                double tempVal = (n/d) * expectedDataDict.get("-,0,0");
-                if (expectedDataDict.containsKey("0,0,0")) {
-                    expectedDataDict.put("0,0,0", expectedDataDict.get("0,0,0") + tempVal);
+                double tempVal = (n/d) * expectedDataMap.get("-,0,0");
+                if (expectedDataMap.containsKey("0,0,0")) {
+                    expectedDataMap.put("0,0,0", expectedDataMap.get("0,0,0") + tempVal);
                 }else {
-                    expectedDataDict.put("0,0,0", tempVal);
+                    expectedDataMap.put("0,0,0", tempVal);
                 }
 
-                double tempVal2 = (1 - (n/d)) * expectedDataDict.get("-,0,0");
-                if (expectedDataDict.containsKey("1,0,0")) {
+                double tempVal2 = (1 - (n/d)) * expectedDataMap.get("-,0,0");
+                if (expectedDataMap.containsKey("1,0,0")) {
 
-                    expectedDataDict.put("1,0,0", expectedDataDict.get("1,0,0") + tempVal2);
+                    expectedDataMap.put("1,0,0", expectedDataMap.get("1,0,0") + tempVal2);
                 }else {
-                    expectedDataDict.put("1,0,0", tempVal2);
+                    expectedDataMap.put("1,0,0", tempVal2);
                 }
 
             }
 //            else if (key.equals(entryOptions[3])) {
             else {
-                n = thetaDict.get("0,x,x") * thetaDict.get("0,0,x") * thetaDict.get("0,x,1");
-                d += thetaDict.get("0,x,x") * thetaDict.get("0,0,x") * thetaDict.get("0,x,1");
-                d += thetaDict.get("1,x,x") * thetaDict.get("1,0,x") * thetaDict.get("1,x,1");
+                n = thetaMap.get("0,x,x") * thetaMap.get("0,0,x") * thetaMap.get("0,x,1");
+                d += thetaMap.get("0,x,x") * thetaMap.get("0,0,x") * thetaMap.get("0,x,1");
+                d += thetaMap.get("1,x,x") * thetaMap.get("1,0,x") * thetaMap.get("1,x,1");
 
-                double tempVal = (n / d) * expectedDataDict.get("-,0,1");
-                if (expectedDataDict.containsKey("0,0,1")) {
-                    expectedDataDict.put("0,0,1", expectedDataDict.get("0,0,1") + tempVal);
+                double tempVal = (n / d) * expectedDataMap.get("-,0,1");
+                if (expectedDataMap.containsKey("0,0,1")) {
+                    expectedDataMap.put("0,0,1", expectedDataMap.get("0,0,1") + tempVal);
                 } else {
-                    expectedDataDict.put("0,0,1", tempVal);
+                    expectedDataMap.put("0,0,1", tempVal);
                 }
 
-                double tempVal2 = (1 - (n / d)) * expectedDataDict.get("-,0,1");
-                if (expectedDataDict.containsKey("1,0,1")) {
+                double tempVal2 = (1 - (n / d)) * expectedDataMap.get("-,0,1");
+                if (expectedDataMap.containsKey("1,0,1")) {
 
-                    expectedDataDict.put("1,0,1", expectedDataDict.get("1,0,1") + tempVal);
+                    expectedDataMap.put("1,0,1", expectedDataMap.get("1,0,1") + tempVal);
                 } else {
-                    expectedDataDict.put("1,0,1", tempVal);
+                    expectedDataMap.put("1,0,1", tempVal);
                 }
 
             }
         }
-        return expectedDataDict;
+        return expectedDataMap;
     }
 
     void mStep(HashMap<String, Double> knownValues, File filename){
@@ -174,7 +174,7 @@ public class EM {
 
         int opIndex = -1;
 
-        HashMap<String, Double> newParamMap = computeNewParams(expectedData, opIndex);
+        HashMap<String, Double> newParamMap = computeNewParams(expectedData, new HashMap<String, Double>(), opIndex);
 
         this.iterations += 1;
 
@@ -189,19 +189,56 @@ public class EM {
 
     }
 
-    private void printResults(HashMap newParamMap) {
+    private void printResults(HashMap<String, Double> newParamMap) {
     }
 
-    private boolean hasConverged(HashMap dataMap, HashMap knownValues, HashMap newParamMap) {
-        float logLikelihoodCurrentParam = 0;
-        float logLikelihoodNewParam = 0;
+    private boolean hasConverged(HashMap<String, Double> dataMap, HashMap<String, Double> currParamMap,
+                                 HashMap<String, Double> newParamMap) {
+        double logLikelihoodCurrentParam = 0, logLikelihoodNewParam = 0;
 
-        dataMap.forEach((key, value) ->{
+        for (Map.Entry<String, Double> entry: dataMap.entrySet()) {
+            String key = entry.getKey();
+            String[] tokenizedKeyStr = key.split(",");
+            String gender = tokenizedKeyStr[0];
+            String weight = tokenizedKeyStr[1];
+            String height = tokenizedKeyStr[2];
 
-        });
+            double probUsingcurrParamMap = 0, probUsingNewParamMap = 0;
+
+            if (gender.equals("-")) {
+                probUsingcurrParamMap += currParamMap.get("0,x,x") * currParamMap.get("0,"+weight+",x") *
+                        currParamMap.get("0,x,"+height);
+                probUsingcurrParamMap += currParamMap.get("1,x,x") * currParamMap.get("0,"+weight+",x") *
+                        currParamMap.get("1,x,"+height);
+
+                probUsingNewParamMap += newParamMap.get("0,x,x") * newParamMap.get("0," + weight +",x") *
+                        currParamMap.get("0,x," + height);
+
+                probUsingNewParamMap += newParamMap.get("1,x,x") * newParamMap.get("1," + weight +",x") *
+                        currParamMap.get("1,x," + height);
+
+            } else {
+                probUsingcurrParamMap = currParamMap.get(gender + "x,x") * 
+                        currParamMap.get(gender + "," + weight +",x") * currParamMap.get(gender + ",x," +height);
+                probUsingNewParamMap = newParamMap.get(gender + "x,x") *
+                        newParamMap.get(gender + "," + weight +",x") * newParamMap.get(gender + ",x," +height);
+
+            }
+            logLikelihoodCurrentParam += Math.log(probUsingcurrParamMap) * dataMap.get(key);
+            logLikelihoodNewParam += Math.log(probUsingNewParamMap) * dataMap.get(key);
+
+        }
+        if (iterations == 1) {
+            logLikelihood.add(logLikelihoodCurrentParam);
+        }
+        logLikelihood.add(logLikelihoodNewParam);
+
+        double diff = Math.abs(logLikelihoodNewParam - logLikelihoodCurrentParam);
+
+        return diff < threshold;
     }
 
-    private HashMap<String, Double> computeNewParams(HashMap<String, Double> expectedDataDict,
+    private HashMap<String, Double> computeNewParams(HashMap<String, Double> expectedDataMap,
                                                      HashMap<String, Double> newParamMap, int opIndex) {
         HashMap<String, Double> newParams = null;
         double n = 0;
@@ -218,7 +255,7 @@ public class EM {
 
 
 
-        for(Entry<String, Double> entry : expectedDataDict.entrySet()){
+        for(Entry<String, Double> entry : expectedDataMap.entrySet()){
             String key = entry.getKey();
             Double value = entry.getValue();
             String[] tokenizedStr = key.split(",");
@@ -229,34 +266,34 @@ public class EM {
             if (!gender.equals("-")){
                 switch (ops[opIndex]) {
                     case 1:
-                        d += expectedDataDict.get(key);
+                        d += expectedDataMap.get(key);
                         if (gender.equals("0")) {
-                            n += expectedDataDict.get(key);
+                            n += expectedDataMap.get(key);
                         }
                         break;
                     case 2:
                         if (gender.equals("0")) {
-                            d += expectedDataDict.get(key);
+                            d += expectedDataMap.get(key);
                             if (weight.equals("1")) {
-                                n += expectedDataDict.get(key);
+                                n += expectedDataMap.get(key);
                             }
 
                         }
                         break;
                     case 3:
                         if (gender.equals("1")) {
-                            d += expectedDataDict.get(key);
+                            d += expectedDataMap.get(key);
                             if (weight.equals("0")) {
-                                n += expectedDataDict.get(key);
+                                n += expectedDataMap.get(key);
                             }
 
                         }
                         break;
                     case 4:
                         if (gender.equals("0")) {
-                            d += expectedDataDict.get(key);
+                            d += expectedDataMap.get(key);
                             if (height.equals("0")) {
-                                n += expectedDataDict.get(key);
+                                n += expectedDataMap.get(key);
                             }
 
                         }
@@ -265,9 +302,9 @@ public class EM {
 //                else if(ops[opIndex].equals("TWO")){
                     case 5:
                         if (gender.equals("1")) {
-                            d += expectedDataDict.get(key);
+                            d += expectedDataMap.get(key);
                             if (height.equals("0")) {
-                                n += expectedDataDict.get(key);
+                                n += expectedDataMap.get(key);
                             }
 
                         }
@@ -294,16 +331,11 @@ public class EM {
                 newParamMap.put(knownData[9] ,1 -(n/d));
         }
 
-        return computeNewParams(expectedDataDict, newParamMap, opIndex);
-
-
-
-
-
+        return computeNewParams(expectedDataMap, newParamMap, opIndex);
     }
 
 
     public static void main(String[] args) {
-        new EM(10,15,19,19,18, new File("hw2dataset_10.txt"));
+//        new EM(10,15,19,19,18, new File("hw2dataset_10.txt"));
     }
 }
