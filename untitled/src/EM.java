@@ -1,6 +1,11 @@
 import java.io.File;
+import java.io.FileWriter;
+import java.io.IOException;
+import java.io.Writer;
 import java.util.*;
 import java.util.Map.Entry;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 public class EM {
 
@@ -8,8 +13,8 @@ public class EM {
     double threshold;
     public int[] ops = {1, 2, 3, 4, 5};
     public String[] knownData  = new String[10];
-    List<Double> logLikelihood = new ArrayList<>();
-
+    ArrayList<Double> logLikelihood = new ArrayList<>();
+    public HashMap<String, Double> thetaMap;
     EM(double gender0, double weight0GivenGender0, double weight0GivenGender1, double height0GivenGender0, double height0GivenGender1, File filename,
        double threshold){
         //default constructor for EM class
@@ -26,26 +31,26 @@ public class EM {
         knownData[8] = "1,x,0";
         knownData[9] = "1,x,1";
 
-        HashMap<String, Double> thetaMap = new HashMap<>();
+        thetaMap = new HashMap<>();
         thetaMap.put(knownData[0], gender0);
-        thetaMap.put(knownData[1], gender0 - 1);
+        thetaMap.put(knownData[1], 1-gender0);
 
         thetaMap.put(knownData[2], weight0GivenGender0);
-        thetaMap.put(knownData[3], weight0GivenGender0 - 1);
+        thetaMap.put(knownData[3], 1-weight0GivenGender0);
 
         thetaMap.put(knownData[4], weight0GivenGender1);
-        thetaMap.put(knownData[5], weight0GivenGender1 - 1);
+        thetaMap.put(knownData[5], 1-weight0GivenGender1);
 
         thetaMap.put(knownData[6], height0GivenGender0);
-        thetaMap.put(knownData[7], height0GivenGender0 - 1);
+        thetaMap.put(knownData[7], 1-height0GivenGender0);
 
         thetaMap.put(knownData[8], height0GivenGender1);
-        thetaMap.put(knownData[9], height0GivenGender1 - 1);
+        thetaMap.put(knownData[9], 1-height0GivenGender1);
 
 //        System.out.println(knownValues.get("1,x,1"));
 
-        mStep(thetaMap, filename);
-        thetaMap.forEach((key, value) -> System.out.println(key +" : " + value));
+        mStep(filename);
+//        thetaMap.forEach((key, value) -> System.out.println(key +" : " + value));
 //        System.out.println(initialValues[0].toString().equals("0,x,x"));
 //        HashMap<String, Integer> dataMap = ReadFile.parseData(filename);
 //        HashMap<String, Integer> expectedData = new HashMap(dataMap);    //contains the current frequencies for tuples
@@ -63,7 +68,7 @@ public class EM {
 
     }
 
-    HashMap<String, Double> eStep(HashMap<String, Double> dataMap, HashMap<String, Double> thetaMap){
+    HashMap<String, Double> eStep(HashMap<String, Double> dataMap){
         HashMap<String, Double> expectedDataMap = cloneMap(dataMap);
 
         double d = 0, n;
@@ -168,31 +173,30 @@ public class EM {
         return expectedDataMap;
     }
 
-    void mStep(HashMap<String, Double> knownValues, File filename){
+    void mStep(File filename){
         HashMap<String, Double> dataMap = ReadFile.parseData(filename);
-        HashMap<String, Double> expectedData = eStep(dataMap, knownValues);
+        HashMap<String, Double> expectedData = eStep(dataMap);
 
         int opIndex = -1;
 
         HashMap<String, Double> newParamMap = computeNewParams(expectedData, new HashMap<String, Double>(), opIndex);
 
-        this.iterations += 1;
+        iterations ++;
 
-        boolean hasConverged = hasConverged(dataMap, knownValues, newParamMap);
+        boolean hasConverged = hasConverged(dataMap, newParamMap);
 
         if (hasConverged){
-            printResults(newParamMap);
+            writeToCSV(logLikelihood);
         }
         else{
-            mStep(newParamMap, filename);
+            mStep(filename);
         }
 
     }
 
-    private void printResults(HashMap<String, Double> newParamMap) {
-    }
 
-    private boolean hasConverged(HashMap<String, Double> dataMap, HashMap<String, Double> currParamMap,
+
+    private boolean hasConverged(HashMap<String, Double> dataMap,
                                  HashMap<String, Double> newParamMap) {
         double logLikelihoodCurrentParam = 0, logLikelihoodNewParam = 0;
 
@@ -203,29 +207,29 @@ public class EM {
             String weight = tokenizedKeyStr[1];
             String height = tokenizedKeyStr[2];
 
-            double probUsingcurrParamMap = 0, probUsingNewParamMap = 0;
+            double priorProb = 0, newProb = 0;
 
             if (gender.equals("-")) {
-                probUsingcurrParamMap += currParamMap.get("0,x,x") * currParamMap.get("0,"+weight+",x") *
-                        currParamMap.get("0,x,"+height);
-                probUsingcurrParamMap += currParamMap.get("1,x,x") * currParamMap.get("0,"+weight+",x") *
-                        currParamMap.get("1,x,"+height);
+                priorProb += thetaMap.get("0,x,x") * thetaMap.get("0,"+weight+",x") *
+                        thetaMap.get("0,x,"+height);
+                priorProb += thetaMap.get("1,x,x") * thetaMap.get("0,"+weight+",x") *
+                        thetaMap.get("1,x,"+height);
 
-                probUsingNewParamMap += newParamMap.get("0,x,x") * newParamMap.get("0," + weight +",x") *
-                        currParamMap.get("0,x," + height);
+                newProb += newParamMap.get("0,x,x") * newParamMap.get("0," + weight +",x") *
+                        thetaMap.get("0,x," + height);
 
-                probUsingNewParamMap += newParamMap.get("1,x,x") * newParamMap.get("1," + weight +",x") *
-                        currParamMap.get("1,x," + height);
+                newProb += newParamMap.get("1,x,x") * newParamMap.get("1," + weight +",x") *
+                        newParamMap.get("1,x," + height);
 
             } else {
-                probUsingcurrParamMap = currParamMap.get(gender + "x,x") * 
-                        currParamMap.get(gender + "," + weight +",x") * currParamMap.get(gender + ",x," +height);
-                probUsingNewParamMap = newParamMap.get(gender + "x,x") *
+                priorProb = thetaMap.get(gender + ",x,x") *
+                        thetaMap.get(gender + "," + weight +",x") * thetaMap.get(gender + ",x," +height);
+                newProb = newParamMap.get(gender + ",x,x") *
                         newParamMap.get(gender + "," + weight +",x") * newParamMap.get(gender + ",x," +height);
 
             }
-            logLikelihoodCurrentParam += Math.log(probUsingcurrParamMap) * dataMap.get(key);
-            logLikelihoodNewParam += Math.log(probUsingNewParamMap) * dataMap.get(key);
+            logLikelihoodCurrentParam += Math.log(priorProb) * dataMap.get(key);
+            logLikelihoodNewParam += Math.log(newProb) * dataMap.get(key);
 
         }
         if (iterations == 1) {
@@ -240,15 +244,12 @@ public class EM {
 
     private HashMap<String, Double> computeNewParams(HashMap<String, Double> expectedDataMap,
                                                      HashMap<String, Double> newParamMap, int opIndex) {
-        HashMap<String, Double> newParams = null;
+//        HashMap<String, Double> newParams = null;
         double n = 0;
         double d = 0;
 
-//        ops = new char[]{'A', 'B', 'C', 'D', 'E'};
-
-
         if (opIndex +1 >= ops.length){
-            return newParams;
+            return newParamMap;
         }
 
         opIndex += 1;
@@ -334,8 +335,33 @@ public class EM {
         return computeNewParams(expectedDataMap, newParamMap, opIndex);
     }
 
+    void writeToCSV(ArrayList<Double> logLikelihood) {
+        String eol = System.getProperty("line.separator");
+
+        try (Writer writer = new FileWriter("graph1.csv")) {
+            for (Double elem: logLikelihood) {
+                writer.append(Double.toString(elem))
+                        .append(',')
+                        .append(eol);
+            }
+        } catch (IOException ex) {
+            ex.printStackTrace(System.err);
+        }
+    }
+
+    public String escapeSpecialCharacters(String data) {
+        String escapedData = data.replaceAll("\\R", " ");
+        if (data.contains(",") || data.contains("\"") || data.contains("'")) {
+            data = data.replace("\"", "\"\"");
+            escapedData = "\"" + data + "\"";
+        }
+        return escapedData;
+    }
+
 
     public static void main(String[] args) {
-//        new EM(10,15,19,19,18, new File("hw2dataset_10.txt"));
+        EM em10 = new EM(0.7,0.8,0.4,0.7,
+                0.3, new File("hw2dataset_10.txt"), 0.0001);
+
     }
 }
