@@ -7,31 +7,34 @@ import java.util.Map.Entry;
 
 public class EM {
 
-    public int iterations;
+    public int iterations = 0;
     final double threshold;
     public final int[] ops = {1, 2, 3, 4, 5};
-    public String[] knownData  = new String[10];
-    ArrayList<Double> logLikelihood;
-    public final HashMap<String, Double> startThetaMap;
-    public File file;
+    public final String[] knownData  = {
+            "0,x,x",
+            "1,x,x",
+            "0,0,x",
+            "0,1,x",
+            "1,0,x",
+            "1,1,x",
+            "0,x,0",
+            "0,x,1",
+            "1,x,0",
+            "1,x,1"
+    };
+    ArrayList<Double> logLikelihood = null;
+    public HashMap<String, Double> startThetaMap = null;
+    public File file = null;
+    public String filenameStr = null;
 
     EM(double gender0, double weight0GivenGender0, double weight0GivenGender1, double height0GivenGender0, double height0GivenGender1, File file,
-       double threshold){
+       double threshold, String filenameStr){
         //default constructor for EM class
         logLikelihood = new ArrayList<>();
         this.threshold = threshold;
         this.file = file;
         this.iterations = 0;
-        knownData[0] = "0,x,x";
-        knownData[1] = "1,x,x";
-        knownData[2] = "0,0,x";
-        knownData[3] = "0,1,x";
-        knownData[4] = "1,0,x";
-        knownData[5] = "1,1,x";
-        knownData[6] = "0,x,0";
-        knownData[7] = "0,x,1";
-        knownData[8] = "1,x,0";
-        knownData[9] = "1,x,1";
+        this.filenameStr = filenameStr;
 
         startThetaMap = new HashMap<>();
         startThetaMap.put(knownData[0], gender0);
@@ -105,7 +108,7 @@ public class EM {
 
                 double tempVal = (n/d) * expectedDataMap.get("-,1,0");
                 if (expectedDataMap.containsKey("0,1,0")) {
-                    expectedDataMap.put("0,1,0", expectedDataMap.get("0,1,1") + tempVal);
+                    expectedDataMap.put("0,1,0", expectedDataMap.get("0,1,0") + tempVal);
                 }else {
                     expectedDataMap.put("0,1,0", tempVal);
                 }
@@ -141,8 +144,7 @@ public class EM {
                 }
 
             }
-//            else if (key.equals(entryOptions[3])) {
-            else {
+            else if (key.equals(entryOptions[3])) {
                 double d = 0, n;
                 n = thetaMap.get("0,x,x") * thetaMap.get("0,0,x") * thetaMap.get("0,x,1");
                 d += thetaMap.get("0,x,x") * thetaMap.get("0,0,x") * thetaMap.get("0,x,1");
@@ -164,6 +166,9 @@ public class EM {
                 }
 
             }
+            else {
+                continue;
+            }
         }
         return expectedDataMap;
     }
@@ -180,9 +185,11 @@ public class EM {
         boolean hasConverged = hasConverged(dataMap, thetaMap, newParamMap);
 
         if (hasConverged){
+            System.out.println("Iterations:" + this.iterations);
             writeToCSV(logLikelihood);
         }
         else{
+
             mStep(newParamMap, file);
         }
 
@@ -207,12 +214,11 @@ public class EM {
             if (gender.equals("-")) {
                 currProb += currParamMap.get("0,x,x") * currParamMap.get("0,"+weight+",x") *
                         currParamMap.get("0,x,"+height);
-                currProb += currParamMap.get("1,x,x") * currParamMap.get("0,"+weight+",x") *
+                currProb += currParamMap.get("1,x,x") * currParamMap.get("1,"+weight+",x") *
                         currParamMap.get("1,x,"+height);
 
                 newProb += newParamMap.get("0,x,x") * newParamMap.get("0," + weight +",x") *
                         newParamMap.get("0,x," + height);
-
                 newProb += newParamMap.get("1,x,x") * newParamMap.get("1," + weight +",x") *
                         newParamMap.get("1,x," + height);
 
@@ -232,14 +238,14 @@ public class EM {
         }
         this.logLikelihood.add(logLikelihoodNewParam);
 
-        double diff = Math.abs(logLikelihoodNewParam - logLikelihoodCurrentParam);
+        double diff = Math.abs(logLikelihoodCurrentParam - logLikelihoodNewParam);
+
 
         return diff <= threshold;
     }
 
     private HashMap<String, Double> computeNewParams(HashMap<String, Double> expectedDataMap,
                                                      HashMap<String, Double> newParamMap, int opIndex) {
-//        HashMap<String, Double> newParams = null;
         double n = 0;
         double d = 0;
 
@@ -270,7 +276,7 @@ public class EM {
                     case 2:
                         if (gender.equals("0")) {
                             d += expectedDataMap.get(key);
-                            if (weight.equals("1")) {
+                            if (weight.equals("0")) {
                                 n += expectedDataMap.get(key);
                             }
 
@@ -305,6 +311,8 @@ public class EM {
 
                         }
                         break;
+                    default:
+                        break;
                 }
             }
         }
@@ -325,6 +333,8 @@ public class EM {
             case 5:
                 newParamMap.put(knownData[8] ,(n/d));
                 newParamMap.put(knownData[9] ,1 -(n/d));
+            default:
+                break;
         }
 
         return computeNewParams(expectedDataMap, newParamMap, opIndex);
@@ -333,7 +343,7 @@ public class EM {
     void writeToCSV(ArrayList<Double> logLikelihood) {
         String eol = System.getProperty("line.separator");
 
-        try (Writer writer = new FileWriter("graph1.csv")) {
+        try (Writer writer = new FileWriter(this.filenameStr + ".csv")) {
             for (Double elem: logLikelihood) {
                 writer.append(Double.toString(elem))
                         .append(',')
@@ -356,7 +366,25 @@ public class EM {
 
     public static void main(String[] args) {
         EM em10 = new EM(0.7,0.8,0.4,0.7,
-                0.3, new File("hw2dataset_10.txt"), 0.0001);
+                0.3, new File("hw2dataset_10.txt"), 0.0001, "hw2dataset_10.txt");
+
+        EM em30 = new EM(0.7,0.8,0.4,0.7,
+                0.3, new File("hw2dataset_30.txt"), 0.0001, "hw2dataset_30.txt");
+
+        EM em50 = new EM(0.7,0.8,0.4,0.7,
+                0.3, new File("hw2dataset_50.txt"), 0.0001, "hw2dataset_50.txt");
+
+
+        EM em70 = new EM(0.7,0.8,0.4,0.7,
+                0.3, new File("hw2dataset_70.txt"), 0.0001, "hw2dataset_70.txt");
+
+
+        EM em100 = new EM(0.7,0.8,0.4,0.7,
+                0.3, new File("hw2dataset_100.txt"), 0.0001, "hw2dataset_100.txt");
+
+
+
+
 
     }
 }
