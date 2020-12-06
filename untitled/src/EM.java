@@ -5,6 +5,8 @@ import java.io.Writer;
 import java.util.*;
 import java.util.Map.Entry;
 
+
+
 public class EM {
 
     public int iterations = 0;
@@ -93,9 +95,9 @@ public class EM {
                 double tempVal2 = (1 - (n/d)) * expectedDataMap.get("-,1,1");
                 if (expectedDataMap.containsKey("1,1,1")) {
 
-                    expectedDataMap.put("1,1,1", expectedDataMap.get("0,1,1") + tempVal2);
+                    expectedDataMap.put("1,1,1", expectedDataMap.get("1,1,1") + tempVal2);
                 }else {
-                    expectedDataMap.put("0,1,1", tempVal2);
+                    expectedDataMap.put("1,1,1", tempVal2);
                 }
 
             }
@@ -116,7 +118,7 @@ public class EM {
                 double tempVal2 = (1 - (n/d)) * expectedDataMap.get("-,1,0");
                 if (expectedDataMap.containsKey("1,1,0")) {
 
-                    expectedDataMap.put("1,1,0", expectedDataMap.get("1,1,1") + tempVal2);
+                    expectedDataMap.put("1,1,0", expectedDataMap.get("1,1,0") + tempVal2);
                 }else {
                     expectedDataMap.put("1,1,0", tempVal2);
                 }
@@ -186,6 +188,7 @@ public class EM {
 
         if (hasConverged){
             System.out.println("Iterations:" + this.iterations);
+//            printFinalProbabi
             writeToCSV(logLikelihood);
         }
         else{
