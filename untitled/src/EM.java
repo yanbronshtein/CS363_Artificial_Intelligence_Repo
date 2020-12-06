@@ -6,28 +6,22 @@ import java.util.*;
 import java.util.Map.Entry;
 
 
-
+/**
+ * This class performs the expectation Maximization Algorithm
+ */
 public class EM {
-
-    public int iterations = 0;
+    /** Stores the number of iterations of the EM alg */
+    public int iterations;
+    /** threshold specified by the user for convergence of the EM alg */
     final double threshold;
+    /* Helper array used for compute newParams  */
     public final int[] ops = {1, 2, 3, 4, 5};
-    public final String[] knownData  = {
-            "0,x,x",
-            "1,x,x",
-            "0,0,x",
-            "0,1,x",
-            "1,0,x",
-            "1,1,x",
-            "0,x,0",
-            "0,x,1",
-            "1,x,0",
-            "1,x,1"
-    };
-    ArrayList<Double> logLikelihood = null;
-    public HashMap<String, Double> startThetaMap = null;
-    public File file = null;
-    public String filenameStr = null;
+    /**  */
+    public final String[] knownData  = {"0,~,~", "1,~,~", "0,0,~", "0,1,~", "1,0,~", "1,1,~", "0,~,0", "0,~,1", "1,~,0", "1,~,1"};
+    ArrayList<Double> logLikelihood;
+    public HashMap<String, Double> startPriorProbMap;
+    public File file;
+    public String filenameStr;
 
     EM(double gender0, double weight0GivenGender0, double weight0GivenGender1, double height0GivenGender0, double height0GivenGender1, File file,
        double threshold, String filenameStr){
@@ -38,23 +32,23 @@ public class EM {
         this.iterations = 0;
         this.filenameStr = filenameStr;
 
-        startThetaMap = new HashMap<>();
-        startThetaMap.put(knownData[0], gender0);
-        startThetaMap.put(knownData[1], 1-gender0);
+        startPriorProbMap = new HashMap<>();
+        startPriorProbMap.put(knownData[0], gender0);
+        startPriorProbMap.put(knownData[1], 1-gender0);
 
-        startThetaMap.put(knownData[2], weight0GivenGender0);
-        startThetaMap.put(knownData[3], 1-weight0GivenGender0);
+        startPriorProbMap.put(knownData[2], weight0GivenGender0);
+        startPriorProbMap.put(knownData[3], 1-weight0GivenGender0);
 
-        startThetaMap.put(knownData[4], weight0GivenGender1);
-        startThetaMap.put(knownData[5], 1-weight0GivenGender1);
+        startPriorProbMap.put(knownData[4], weight0GivenGender1);
+        startPriorProbMap.put(knownData[5], 1-weight0GivenGender1);
 
-        startThetaMap.put(knownData[6], height0GivenGender0);
-        startThetaMap.put(knownData[7], 1-height0GivenGender0);
+        startPriorProbMap.put(knownData[6], height0GivenGender0);
+        startPriorProbMap.put(knownData[7], 1-height0GivenGender0);
 
-        startThetaMap.put(knownData[8], height0GivenGender1);
-        startThetaMap.put(knownData[9], 1-height0GivenGender1);
+        startPriorProbMap.put(knownData[8], height0GivenGender1);
+        startPriorProbMap.put(knownData[9], 1-height0GivenGender1);
 
-        mStep(this.startThetaMap, this.file);
+        mStep(this.startPriorProbMap, this.file);
     }
 
     private static HashMap<String, Double> cloneMap(HashMap<String, Double> dataMap) {
@@ -66,7 +60,7 @@ public class EM {
 
     }
 
-    HashMap<String, Double> eStep(HashMap<String, Double> dataMap, HashMap<String, Double> thetaMap){
+    HashMap<String, Double> eStep(HashMap<String, Double> dataMap, HashMap<String, Double> priorProbMap){
         HashMap<String, Double> expectedDataMap = cloneMap(dataMap);
 
 
@@ -81,9 +75,9 @@ public class EM {
             String key = entry.getKey();
             if (key.equals(entryOptions[0])){
                 double d = 0 ,n;
-                n = thetaMap.get("0,x,x") * thetaMap.get("0,1,x") * thetaMap.get("0,x,1");
-                d += thetaMap.get("0,x,x") * thetaMap.get("0,1,x") * thetaMap.get("0,x,1");
-                d += thetaMap.get("1,x,x") * thetaMap.get("1,1,x") * thetaMap.get("1,x,1");
+                n = priorProbMap.get("0,~,~") * priorProbMap.get("0,1,~") * priorProbMap.get("0,~,1");
+                d += priorProbMap.get("0,~,~") * priorProbMap.get("0,1,~") * priorProbMap.get("0,~,1") +
+                        priorProbMap.get("1,~,~") * priorProbMap.get("1,1,~") * priorProbMap.get("1,~,1");
 
                 double tempVal = (n/d) * expectedDataMap.get("-,1,1");
                 if (expectedDataMap.containsKey("0,1,1")) {
@@ -104,9 +98,9 @@ public class EM {
 
             else if (key.equals(entryOptions[1])){
                 double d= 0, n;
-                n = thetaMap.get("0,x,x") * thetaMap.get("0,1,x") * thetaMap.get("0,x,0");
-                d += thetaMap.get("0,x,x") * thetaMap.get("0,1,x") * thetaMap.get("0,x,0");
-                d += thetaMap.get("1,x,x") * thetaMap.get("1,1,x") * thetaMap.get("1,x,0");
+                n = priorProbMap.get("0,~,~") * priorProbMap.get("0,1,~") * priorProbMap.get("0,~,0");
+                d += priorProbMap.get("0,~,~") * priorProbMap.get("0,1,~") * priorProbMap.get("0,~,0") +
+                        priorProbMap.get("1,~,~") * priorProbMap.get("1,1,~") * priorProbMap.get("1,~,0");
 
                 double tempVal = (n/d) * expectedDataMap.get("-,1,0");
                 if (expectedDataMap.containsKey("0,1,0")) {
@@ -126,9 +120,9 @@ public class EM {
             }
             else if (key.equals(entryOptions[2])){
                 double d = 0, n;
-                n = thetaMap.get("0,x,x") * thetaMap.get("0,0,x") * thetaMap.get("0,x,0");
-                d += thetaMap.get("0,x,x") * thetaMap.get("0,0,x") * thetaMap.get("0,x,0");
-                d += thetaMap.get("1,x,x") * thetaMap.get("1,0,x") * thetaMap.get("1,x,0");
+                n = priorProbMap.get("0,~,~") * priorProbMap.get("0,0,~") * priorProbMap.get("0,~,0");
+                d += priorProbMap.get("0,~,~") * priorProbMap.get("0,0,~") * priorProbMap.get("0,~,0") +
+                        priorProbMap.get("1,~,~") * priorProbMap.get("1,0,~") * priorProbMap.get("1,~,0");
 
                 double tempVal = (n/d) * expectedDataMap.get("-,0,0");
                 if (expectedDataMap.containsKey("0,0,0")) {
@@ -148,9 +142,9 @@ public class EM {
             }
             else if (key.equals(entryOptions[3])) {
                 double d = 0, n;
-                n = thetaMap.get("0,x,x") * thetaMap.get("0,0,x") * thetaMap.get("0,x,1");
-                d += thetaMap.get("0,x,x") * thetaMap.get("0,0,x") * thetaMap.get("0,x,1");
-                d += thetaMap.get("1,x,x") * thetaMap.get("1,0,x") * thetaMap.get("1,x,1");
+                n = priorProbMap.get("0,~,~") * priorProbMap.get("0,0,~") * priorProbMap.get("0,~,1");
+                d += priorProbMap.get("0,~,~") * priorProbMap.get("0,0,~") * priorProbMap.get("0,~,1") +
+                        priorProbMap.get("1,~,~") * priorProbMap.get("1,0,~") * priorProbMap.get("1,~,1");
 
                 double tempVal = (n / d) * expectedDataMap.get("-,0,1");
                 if (expectedDataMap.containsKey("0,0,1")) {
@@ -180,7 +174,7 @@ public class EM {
         HashMap<String, Double> expectedData = eStep(dataMap, thetaMap);
 
         HashMap<String, Double> tempMap = new HashMap<>();
-        HashMap<String, Double> newParamMap = computeNewParams(expectedData, tempMap, -1);
+        HashMap<String, Double> newParamMap = calculateNewParameters(expectedData, tempMap, -1);
 
         this.iterations ++;
 
@@ -188,7 +182,7 @@ public class EM {
 
         if (hasConverged){
             System.out.println("Iterations:" + this.iterations);
-//            printFinalProbabi
+            printFinalProbabilities(newParamMap);
             writeToCSV(logLikelihood);
         }
         else{
@@ -215,21 +209,21 @@ public class EM {
             double currProb = 0, newProb = 0;
 
             if (gender.equals("-")) {
-                currProb += currParamMap.get("0,x,x") * currParamMap.get("0,"+weight+",x") *
-                        currParamMap.get("0,x,"+height);
-                currProb += currParamMap.get("1,x,x") * currParamMap.get("1,"+weight+",x") *
-                        currParamMap.get("1,x,"+height);
+                currProb += currParamMap.get("0,~,~") * currParamMap.get("0,"+weight+",~") *
+                        currParamMap.get("0,~,"+height) +
+                        currParamMap.get("1,~,~") * currParamMap.get("1,"+weight+",~") *
+                        currParamMap.get("1,~,"+height);
 
-                newProb += newParamMap.get("0,x,x") * newParamMap.get("0," + weight +",x") *
-                        newParamMap.get("0,x," + height);
-                newProb += newParamMap.get("1,x,x") * newParamMap.get("1," + weight +",x") *
-                        newParamMap.get("1,x," + height);
+                newProb += newParamMap.get("0,~,~") * newParamMap.get("0," + weight +",~") *
+                        newParamMap.get("0,~," + height) +
+                        newParamMap.get("1,~,~") * newParamMap.get("1," + weight +",~") *
+                        newParamMap.get("1,~," + height);
 
             } else {
-                currProb = currParamMap.get(gender + ",x,x") *
-                        currParamMap.get(gender + "," + weight +",x") * currParamMap.get(gender + ",x," +height);
-                newProb = newParamMap.get(gender + ",x,x") *
-                        newParamMap.get(gender + "," + weight +",x") * newParamMap.get(gender + ",x," +height);
+                currProb = currParamMap.get(gender + ",~,~") *
+                        currParamMap.get(gender + "," + weight +",~") * currParamMap.get(gender + ",~," +height);
+                newProb = newParamMap.get(gender + ",~,~") *
+                        newParamMap.get(gender + "," + weight +",~") * newParamMap.get(gender + ",~," +height);
 
             }
             logLikelihoodCurrentParam += Math.log(currProb) * dataMap.get(key);
@@ -247,8 +241,8 @@ public class EM {
         return diff <= threshold;
     }
 
-    private HashMap<String, Double> computeNewParams(HashMap<String, Double> expectedDataMap,
-                                                     HashMap<String, Double> newParamMap, int opIndex) {
+    private HashMap<String, Double> calculateNewParameters(HashMap<String, Double> expectedDataMap,
+                                                           HashMap<String, Double> newParamMap, int opIndex) {
         double n = 0;
         double d = 0;
 
@@ -262,7 +256,6 @@ public class EM {
 
         for(Entry<String, Double> entry : expectedDataMap.entrySet()){
             String key = entry.getKey();
-//            Double value = entry.getValue();
             String[] tokenizedStr = key.split(",");
             String gender = tokenizedStr[0];
             String weight = tokenizedStr[1];
@@ -304,7 +297,6 @@ public class EM {
                         }
                         break;
 
-//                else if(ops[opIndex].equals("TWO")){
                     case 5:
                         if (gender.equals("1")) {
                             d += expectedDataMap.get(key);
@@ -319,7 +311,7 @@ public class EM {
                 }
             }
         }
-        
+
         switch (ops[opIndex]) {
             case 1:
                 newParamMap.put(knownData[0] ,(n/d));
@@ -340,7 +332,42 @@ public class EM {
                 break;
         }
 
-        return computeNewParams(expectedDataMap, newParamMap, opIndex);
+        return calculateNewParameters(expectedDataMap, newParamMap, opIndex);
+    }
+
+    void printFinalProbabilities(HashMap<String, Double> finalParamMap) {
+        for (Map.Entry<String, Double> entry: finalParamMap.entrySet()) {
+            if (entry.getKey().equals(knownData[0])) {
+                System.out.println("P(gender=0):" + entry.getValue());
+            }
+            else if (entry.getKey().equals(knownData[1])) {
+                System.out.println("P(gender=1):" + entry.getValue());
+            }
+            else if (entry.getKey().equals(knownData[2])) {
+                System.out.println("P(weight=0 | gender=0):" + entry.getValue());
+            }
+            else if (entry.getKey().equals(knownData[3])) {
+                System.out.println("P(weight=1 | gender=0):" + entry.getValue());
+            }
+            else if (entry.getKey().equals(knownData[4])) {
+                System.out.println("P(weight=0 | gender=1):" + entry.getValue());
+            }
+            else if (entry.getKey().equals(knownData[5])) {
+                System.out.println("P(weight=1 | gender=1):" + entry.getValue());
+            }
+            else if (entry.getKey().equals(knownData[6])) {
+                System.out.println("P(height=0 | gender=0):" + entry.getValue());
+            }
+            else if (entry.getKey().equals(knownData[7])) {
+                System.out.println("P(height=1 | gender=0):" + entry.getValue());
+            }
+            else if (entry.getKey().equals(knownData[8])) {
+                System.out.println("P(height=0 | gender=1):" + entry.getValue());
+            }
+            else {
+                System.out.println("P(height=1 | gender=1):" + entry.getValue());
+            }
+        }
     }
 
     void writeToCSV(ArrayList<Double> logLikelihood) {
@@ -355,15 +382,6 @@ public class EM {
         } catch (IOException ex) {
             ex.printStackTrace(System.err);
         }
-    }
-
-    public String escapeSpecialCharacters(String data) {
-        String escapedData = data.replaceAll("\\R", " ");
-        if (data.contains(",") || data.contains("\"") || data.contains("'")) {
-            data = data.replace("\"", "\"\"");
-            escapedData = "\"" + data + "\"";
-        }
-        return escapedData;
     }
 
 
