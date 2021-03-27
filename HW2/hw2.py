@@ -497,200 +497,200 @@ def main():
                w0_given_g0_1=given_probs[2], h_0_given_g_0=given_probs[3], h_0_given_g1=given_probs[4],
                filename=f[0], threshold=0.0001, make_graph=True)
 
-    print(print_str[1])
-    print(create_prior_prob_df(test_1_probs))
-    test_1_em_10 = EM(g_0=test_1_probs[0], w_0_given_g_0=test_1_probs[1],
-                      w0_given_g0_1=test_1_probs[2], h_0_given_g_0=test_1_probs[3], h_0_given_g1=test_1_probs[4],
-                      filename=f[0], threshold=0.0001)
-
-    print(print_str[2])
-    print(create_prior_prob_df(test_2_probs))
-    test_2_em_10 = EM(g_0=test_2_probs[0], w_0_given_g_0=test_2_probs[1],
-                      w0_given_g0_1=test_2_probs[2], h_0_given_g_0=test_2_probs[3], h_0_given_g1=test_2_probs[4],
-                      filename=f[0], threshold=0.0001)
-
-    print(print_str[3])
-    print(create_prior_prob_df(test_3_probs))
-    test_3_em_10 = EM(g_0=test_3_probs[0], w_0_given_g_0=test_3_probs[1],
-                      w0_given_g0_1=test_3_probs[2], h_0_given_g_0=test_3_probs[3], h_0_given_g1=test_3_probs[4],
-                      filename=f[0], threshold=0.0001)
-
-    print(print_str[4])
-    print(create_prior_prob_df(test_4_probs))
-    test_4_em_10 = EM(g_0=test_4_probs[0], w_0_given_g_0=test_4_probs[1],
-                      w0_given_g0_1=test_4_probs[2], h_0_given_g_0=test_4_probs[3], h_0_given_g1=test_4_probs[4],
-                      filename=f[0], threshold=0.0001)
-
-    print(print_str[5])
-    print(create_prior_prob_df(test_5_probs))
-    test_5_em_10 = EM(g_0=test_5_probs[0], w_0_given_g_0=test_5_probs[1],
-                      w0_given_g0_1=test_5_probs[2], h_0_given_g_0=test_5_probs[3], h_0_given_g1=test_5_probs[4],
-                      filename=f[0], threshold=0.0001)
-
-    """
-         hw2_dataset_30.txt
-    """
-    print("****************************************************************************************************")
-    print("filename", f[1])
-    print(print_str[0])
-    print(create_prior_prob_df(given_probs))
-    em_30 = EM(g_0=0.7, w_0_given_g_0=0.8,
-               w0_given_g0_1=0.4, h_0_given_g_0=0.7, h_0_given_g1=0.3,
-               filename=f[1], threshold=0.0001, make_graph=True)
-
-    print(print_str[1])
-    print(create_prior_prob_df(test_1_probs))
-    test_1_em_30 = EM(g_0=test_1_probs[0], w_0_given_g_0=test_1_probs[1],
-                      w0_given_g0_1=test_1_probs[2], h_0_given_g_0=test_1_probs[3], h_0_given_g1=test_1_probs[4],
-                      filename=f[1], threshold=0.0001)
-
-    print(print_str[2])
-    print(create_prior_prob_df(test_2_probs))
-    test_2_em_30 = EM(g_0=test_2_probs[0], w_0_given_g_0=test_2_probs[1],
-                      w0_given_g0_1=test_2_probs[2], h_0_given_g_0=test_2_probs[3], h_0_given_g1=test_2_probs[4],
-                      filename=f[1], threshold=0.0001)
-
-    print(print_str[3])
-    print(create_prior_prob_df(test_3_probs))
-    test_3_em_30 = EM(g_0=test_3_probs[0], w_0_given_g_0=test_3_probs[1],
-                      w0_given_g0_1=test_3_probs[2], h_0_given_g_0=test_3_probs[3], h_0_given_g1=test_3_probs[4],
-                      filename=f[1], threshold=0.0001)
-
-    print(print_str[4])
-    print(create_prior_prob_df(test_4_probs))
-    test_4_em_30 = EM(g_0=test_4_probs[0], w_0_given_g_0=test_4_probs[1],
-                      w0_given_g0_1=test_4_probs[2], h_0_given_g_0=test_4_probs[3], h_0_given_g1=test_4_probs[4],
-                      filename=f[1], threshold=0.0001)
-
-    print(print_str[5])
-    print(create_prior_prob_df(test_5_probs))
-    test_5_em_30 = EM(g_0=test_5_probs[0], w_0_given_g_0=test_5_probs[1],
-                      w0_given_g0_1=test_5_probs[2], h_0_given_g_0=test_5_probs[3], h_0_given_g1=test_5_probs[4],
-                      filename=f[1], threshold=0.0001)
-
-    """
-        hw2_dataset_50.txt
-    """
-    print("****************************************************************************************************")
-    print("filename", f[2])
-    print(print_str[0])
-    print(create_prior_prob_df(given_probs))
-    em_50 = EM(g_0=0.7, w_0_given_g_0=0.8,
-               w0_given_g0_1=0.4, h_0_given_g_0=0.7, h_0_given_g1=0.3,
-               filename=f[2], threshold=0.0001, make_graph=True)
-
-    print(print_str[1])
-    print(create_prior_prob_df(test_1_probs))
-    test_1_em_50 = EM(g_0=test_1_probs[0], w_0_given_g_0=test_1_probs[1],
-                      w0_given_g0_1=test_1_probs[2], h_0_given_g_0=test_1_probs[3], h_0_given_g1=test_1_probs[4],
-                      filename=f[2], threshold=0.0001)
-
-    print(print_str[2])
-    print(create_prior_prob_df(test_2_probs))
-    test_2_em_50 = EM(g_0=test_2_probs[0], w_0_given_g_0=test_2_probs[1],
-                      w0_given_g0_1=test_2_probs[2], h_0_given_g_0=test_2_probs[3], h_0_given_g1=test_2_probs[4],
-                      filename=f[2], threshold=0.0001)
-
-    print(print_str[3])
-    print(create_prior_prob_df(test_3_probs))
-    test_3_em_50 = EM(g_0=test_3_probs[0], w_0_given_g_0=test_3_probs[1],
-                      w0_given_g0_1=test_3_probs[2], h_0_given_g_0=test_3_probs[3], h_0_given_g1=test_3_probs[4],
-                      filename=f[2], threshold=0.0001)
-
-    print(print_str[4])
-    print(create_prior_prob_df(test_4_probs))
-    test_4_em_50 = EM(g_0=test_4_probs[0], w_0_given_g_0=test_4_probs[1],
-                      w0_given_g0_1=test_4_probs[2], h_0_given_g_0=test_4_probs[3], h_0_given_g1=test_4_probs[4],
-                      filename=f[2], threshold=0.0001)
-
-    print(print_str[5])
-    print(create_prior_prob_df(test_5_probs))
-    test_5_em_50 = EM(g_0=test_5_probs[0], w_0_given_g_0=test_5_probs[1],
-                      w0_given_g0_1=test_5_probs[2], h_0_given_g_0=test_5_probs[3], h_0_given_g1=test_5_probs[4],
-                      filename=f[2], threshold=0.0001)
-
-    """
-        hw2_dataset_70.txt
-    """
-    print("****************************************************************************************************")
-
-    print("filename", f[3])
-    print(print_str[0])
-    print(create_prior_prob_df(given_probs))
-    em_70 = EM(g_0=0.7, w_0_given_g_0=0.8,
-               w0_given_g0_1=0.4, h_0_given_g_0=0.7, h_0_given_g1=0.3,
-               filename=f[3], threshold=0.0001, make_graph=True)
-
-    print(print_str[1])
-    print(create_prior_prob_df(test_1_probs))
-    test_1_em_70 = EM(g_0=test_1_probs[0], w_0_given_g_0=test_1_probs[1],
-                      w0_given_g0_1=test_1_probs[2], h_0_given_g_0=test_1_probs[3], h_0_given_g1=test_1_probs[4],
-                      filename=f[3], threshold=0.0001)
-
-    print(print_str[2])
-    print(create_prior_prob_df(test_2_probs))
-    test_2_em_70 = EM(g_0=test_2_probs[0], w_0_given_g_0=test_2_probs[1],
-                      w0_given_g0_1=test_2_probs[2], h_0_given_g_0=test_2_probs[3], h_0_given_g1=test_2_probs[4],
-                      filename=f[3], threshold=0.0001)
-
-    print(print_str[3])
-    print(create_prior_prob_df(test_3_probs))
-    test_3_em_70 = EM(g_0=test_3_probs[0], w_0_given_g_0=test_3_probs[1],
-                      w0_given_g0_1=test_3_probs[2], h_0_given_g_0=test_3_probs[3], h_0_given_g1=test_3_probs[4],
-                      filename=f[3], threshold=0.0001)
-
-    print(print_str[4])
-    print(create_prior_prob_df(test_4_probs))
-    test_4_em_70 = EM(g_0=test_4_probs[0], w_0_given_g_0=test_4_probs[1],
-                      w0_given_g0_1=test_4_probs[2], h_0_given_g_0=test_4_probs[3], h_0_given_g1=test_4_probs[4],
-                      filename=f[3], threshold=0.0001)
-
-    print(print_str[5])
-    print(create_prior_prob_df(test_5_probs))
-    test_5_em_70 = EM(g_0=test_5_probs[0], w_0_given_g_0=test_5_probs[1],
-                      w0_given_g0_1=test_5_probs[2], h_0_given_g_0=test_5_probs[3], h_0_given_g1=test_5_probs[4],
-                      filename=f[3], threshold=0.0001)
-
-    """
-        hw2_dataset_100.txt
-    """
-    print("****************************************************************************************************")
-    print("filename", f[4])
-    print(print_str[0])
-    print(create_prior_prob_df(given_probs))
-    em_100 = EM(g_0=0.7, w_0_given_g_0=0.8,
-                w0_given_g0_1=0.4, h_0_given_g_0=0.7, h_0_given_g1=0.3,
-                filename=f[4], threshold=0.0001, make_graph=True)
-
-    print(print_str[1])
-    print(create_prior_prob_df(test_1_probs))
-    test_1_em_100 = EM(g_0=test_1_probs[0], w_0_given_g_0=test_1_probs[1],
-                       w0_given_g0_1=test_1_probs[2], h_0_given_g_0=test_1_probs[3], h_0_given_g1=test_1_probs[4],
-                       filename=f[4], threshold=0.0001)
-
-    print(print_str[2])
-    print(create_prior_prob_df(test_2_probs))
-    test_2_em_100 = EM(g_0=test_2_probs[0], w_0_given_g_0=test_2_probs[1],
-                       w0_given_g0_1=test_2_probs[2], h_0_given_g_0=test_2_probs[3], h_0_given_g1=test_2_probs[4],
-                       filename=f[4], threshold=0.0001)
-
-    print(print_str[3])
-    print(create_prior_prob_df(test_3_probs))
-    test_3_em_100 = EM(g_0=test_3_probs[0], w_0_given_g_0=test_3_probs[1],
-                       w0_given_g0_1=test_3_probs[2], h_0_given_g_0=test_3_probs[3], h_0_given_g1=test_3_probs[4],
-                       filename=f[4], threshold=0.0001)
-
-    print(print_str[4])
-    print(create_prior_prob_df(test_4_probs))
-    test_4_em_100 = EM(g_0=test_4_probs[0], w_0_given_g_0=test_4_probs[1],
-                       w0_given_g0_1=test_4_probs[2], h_0_given_g_0=test_4_probs[3], h_0_given_g1=test_4_probs[4],
-                       filename=f[4], threshold=0.0001)
-
-    print(print_str[5])
-    print(create_prior_prob_df(test_5_probs))
-    test_5_em_100 = EM(g_0=test_5_probs[0], w_0_given_g_0=test_5_probs[1],
-                       w0_given_g0_1=test_5_probs[2], h_0_given_g_0=test_5_probs[3], h_0_given_g1=test_5_probs[4],
-                       filename=f[4], threshold=0.0001)
+    # print(print_str[1])
+    # print(create_prior_prob_df(test_1_probs))
+    # test_1_em_10 = EM(g_0=test_1_probs[0], w_0_given_g_0=test_1_probs[1],
+    #                   w0_given_g0_1=test_1_probs[2], h_0_given_g_0=test_1_probs[3], h_0_given_g1=test_1_probs[4],
+    #                   filename=f[0], threshold=0.0001)
+    #
+    # print(print_str[2])
+    # print(create_prior_prob_df(test_2_probs))
+    # test_2_em_10 = EM(g_0=test_2_probs[0], w_0_given_g_0=test_2_probs[1],
+    #                   w0_given_g0_1=test_2_probs[2], h_0_given_g_0=test_2_probs[3], h_0_given_g1=test_2_probs[4],
+    #                   filename=f[0], threshold=0.0001)
+    #
+    # print(print_str[3])
+    # print(create_prior_prob_df(test_3_probs))
+    # test_3_em_10 = EM(g_0=test_3_probs[0], w_0_given_g_0=test_3_probs[1],
+    #                   w0_given_g0_1=test_3_probs[2], h_0_given_g_0=test_3_probs[3], h_0_given_g1=test_3_probs[4],
+    #                   filename=f[0], threshold=0.0001)
+    #
+    # print(print_str[4])
+    # print(create_prior_prob_df(test_4_probs))
+    # test_4_em_10 = EM(g_0=test_4_probs[0], w_0_given_g_0=test_4_probs[1],
+    #                   w0_given_g0_1=test_4_probs[2], h_0_given_g_0=test_4_probs[3], h_0_given_g1=test_4_probs[4],
+    #                   filename=f[0], threshold=0.0001)
+    #
+    # print(print_str[5])
+    # print(create_prior_prob_df(test_5_probs))
+    # test_5_em_10 = EM(g_0=test_5_probs[0], w_0_given_g_0=test_5_probs[1],
+    #                   w0_given_g0_1=test_5_probs[2], h_0_given_g_0=test_5_probs[3], h_0_given_g1=test_5_probs[4],
+    #                   filename=f[0], threshold=0.0001)
+    #
+    # """
+    #      hw2_dataset_30.txt
+    # """
+    # print("****************************************************************************************************")
+    # print("filename", f[1])
+    # print(print_str[0])
+    # print(create_prior_prob_df(given_probs))
+    # em_30 = EM(g_0=0.7, w_0_given_g_0=0.8,
+    #            w0_given_g0_1=0.4, h_0_given_g_0=0.7, h_0_given_g1=0.3,
+    #            filename=f[1], threshold=0.0001, make_graph=True)
+    #
+    # print(print_str[1])
+    # print(create_prior_prob_df(test_1_probs))
+    # test_1_em_30 = EM(g_0=test_1_probs[0], w_0_given_g_0=test_1_probs[1],
+    #                   w0_given_g0_1=test_1_probs[2], h_0_given_g_0=test_1_probs[3], h_0_given_g1=test_1_probs[4],
+    #                   filename=f[1], threshold=0.0001)
+    #
+    # print(print_str[2])
+    # print(create_prior_prob_df(test_2_probs))
+    # test_2_em_30 = EM(g_0=test_2_probs[0], w_0_given_g_0=test_2_probs[1],
+    #                   w0_given_g0_1=test_2_probs[2], h_0_given_g_0=test_2_probs[3], h_0_given_g1=test_2_probs[4],
+    #                   filename=f[1], threshold=0.0001)
+    #
+    # print(print_str[3])
+    # print(create_prior_prob_df(test_3_probs))
+    # test_3_em_30 = EM(g_0=test_3_probs[0], w_0_given_g_0=test_3_probs[1],
+    #                   w0_given_g0_1=test_3_probs[2], h_0_given_g_0=test_3_probs[3], h_0_given_g1=test_3_probs[4],
+    #                   filename=f[1], threshold=0.0001)
+    #
+    # print(print_str[4])
+    # print(create_prior_prob_df(test_4_probs))
+    # test_4_em_30 = EM(g_0=test_4_probs[0], w_0_given_g_0=test_4_probs[1],
+    #                   w0_given_g0_1=test_4_probs[2], h_0_given_g_0=test_4_probs[3], h_0_given_g1=test_4_probs[4],
+    #                   filename=f[1], threshold=0.0001)
+    #
+    # print(print_str[5])
+    # print(create_prior_prob_df(test_5_probs))
+    # test_5_em_30 = EM(g_0=test_5_probs[0], w_0_given_g_0=test_5_probs[1],
+    #                   w0_given_g0_1=test_5_probs[2], h_0_given_g_0=test_5_probs[3], h_0_given_g1=test_5_probs[4],
+    #                   filename=f[1], threshold=0.0001)
+    #
+    # """
+    #     hw2_dataset_50.txt
+    # """
+    # print("****************************************************************************************************")
+    # print("filename", f[2])
+    # print(print_str[0])
+    # print(create_prior_prob_df(given_probs))
+    # em_50 = EM(g_0=0.7, w_0_given_g_0=0.8,
+    #            w0_given_g0_1=0.4, h_0_given_g_0=0.7, h_0_given_g1=0.3,
+    #            filename=f[2], threshold=0.0001, make_graph=True)
+    #
+    # print(print_str[1])
+    # print(create_prior_prob_df(test_1_probs))
+    # test_1_em_50 = EM(g_0=test_1_probs[0], w_0_given_g_0=test_1_probs[1],
+    #                   w0_given_g0_1=test_1_probs[2], h_0_given_g_0=test_1_probs[3], h_0_given_g1=test_1_probs[4],
+    #                   filename=f[2], threshold=0.0001)
+    #
+    # print(print_str[2])
+    # print(create_prior_prob_df(test_2_probs))
+    # test_2_em_50 = EM(g_0=test_2_probs[0], w_0_given_g_0=test_2_probs[1],
+    #                   w0_given_g0_1=test_2_probs[2], h_0_given_g_0=test_2_probs[3], h_0_given_g1=test_2_probs[4],
+    #                   filename=f[2], threshold=0.0001)
+    #
+    # print(print_str[3])
+    # print(create_prior_prob_df(test_3_probs))
+    # test_3_em_50 = EM(g_0=test_3_probs[0], w_0_given_g_0=test_3_probs[1],
+    #                   w0_given_g0_1=test_3_probs[2], h_0_given_g_0=test_3_probs[3], h_0_given_g1=test_3_probs[4],
+    #                   filename=f[2], threshold=0.0001)
+    #
+    # print(print_str[4])
+    # print(create_prior_prob_df(test_4_probs))
+    # test_4_em_50 = EM(g_0=test_4_probs[0], w_0_given_g_0=test_4_probs[1],
+    #                   w0_given_g0_1=test_4_probs[2], h_0_given_g_0=test_4_probs[3], h_0_given_g1=test_4_probs[4],
+    #                   filename=f[2], threshold=0.0001)
+    #
+    # print(print_str[5])
+    # print(create_prior_prob_df(test_5_probs))
+    # test_5_em_50 = EM(g_0=test_5_probs[0], w_0_given_g_0=test_5_probs[1],
+    #                   w0_given_g0_1=test_5_probs[2], h_0_given_g_0=test_5_probs[3], h_0_given_g1=test_5_probs[4],
+    #                   filename=f[2], threshold=0.0001)
+    #
+    # """
+    #     hw2_dataset_70.txt
+    # """
+    # print("****************************************************************************************************")
+    #
+    # print("filename", f[3])
+    # print(print_str[0])
+    # print(create_prior_prob_df(given_probs))
+    # em_70 = EM(g_0=0.7, w_0_given_g_0=0.8,
+    #            w0_given_g0_1=0.4, h_0_given_g_0=0.7, h_0_given_g1=0.3,
+    #            filename=f[3], threshold=0.0001, make_graph=True)
+    #
+    # print(print_str[1])
+    # print(create_prior_prob_df(test_1_probs))
+    # test_1_em_70 = EM(g_0=test_1_probs[0], w_0_given_g_0=test_1_probs[1],
+    #                   w0_given_g0_1=test_1_probs[2], h_0_given_g_0=test_1_probs[3], h_0_given_g1=test_1_probs[4],
+    #                   filename=f[3], threshold=0.0001)
+    #
+    # print(print_str[2])
+    # print(create_prior_prob_df(test_2_probs))
+    # test_2_em_70 = EM(g_0=test_2_probs[0], w_0_given_g_0=test_2_probs[1],
+    #                   w0_given_g0_1=test_2_probs[2], h_0_given_g_0=test_2_probs[3], h_0_given_g1=test_2_probs[4],
+    #                   filename=f[3], threshold=0.0001)
+    #
+    # print(print_str[3])
+    # print(create_prior_prob_df(test_3_probs))
+    # test_3_em_70 = EM(g_0=test_3_probs[0], w_0_given_g_0=test_3_probs[1],
+    #                   w0_given_g0_1=test_3_probs[2], h_0_given_g_0=test_3_probs[3], h_0_given_g1=test_3_probs[4],
+    #                   filename=f[3], threshold=0.0001)
+    #
+    # print(print_str[4])
+    # print(create_prior_prob_df(test_4_probs))
+    # test_4_em_70 = EM(g_0=test_4_probs[0], w_0_given_g_0=test_4_probs[1],
+    #                   w0_given_g0_1=test_4_probs[2], h_0_given_g_0=test_4_probs[3], h_0_given_g1=test_4_probs[4],
+    #                   filename=f[3], threshold=0.0001)
+    #
+    # print(print_str[5])
+    # print(create_prior_prob_df(test_5_probs))
+    # test_5_em_70 = EM(g_0=test_5_probs[0], w_0_given_g_0=test_5_probs[1],
+    #                   w0_given_g0_1=test_5_probs[2], h_0_given_g_0=test_5_probs[3], h_0_given_g1=test_5_probs[4],
+    #                   filename=f[3], threshold=0.0001)
+    #
+    # """
+    #     hw2_dataset_100.txt
+    # """
+    # print("****************************************************************************************************")
+    # print("filename", f[4])
+    # print(print_str[0])
+    # print(create_prior_prob_df(given_probs))
+    # em_100 = EM(g_0=0.7, w_0_given_g_0=0.8,
+    #             w0_given_g0_1=0.4, h_0_given_g_0=0.7, h_0_given_g1=0.3,
+    #             filename=f[4], threshold=0.0001, make_graph=True)
+    #
+    # print(print_str[1])
+    # print(create_prior_prob_df(test_1_probs))
+    # test_1_em_100 = EM(g_0=test_1_probs[0], w_0_given_g_0=test_1_probs[1],
+    #                    w0_given_g0_1=test_1_probs[2], h_0_given_g_0=test_1_probs[3], h_0_given_g1=test_1_probs[4],
+    #                    filename=f[4], threshold=0.0001)
+    #
+    # print(print_str[2])
+    # print(create_prior_prob_df(test_2_probs))
+    # test_2_em_100 = EM(g_0=test_2_probs[0], w_0_given_g_0=test_2_probs[1],
+    #                    w0_given_g0_1=test_2_probs[2], h_0_given_g_0=test_2_probs[3], h_0_given_g1=test_2_probs[4],
+    #                    filename=f[4], threshold=0.0001)
+    #
+    # print(print_str[3])
+    # print(create_prior_prob_df(test_3_probs))
+    # test_3_em_100 = EM(g_0=test_3_probs[0], w_0_given_g_0=test_3_probs[1],
+    #                    w0_given_g0_1=test_3_probs[2], h_0_given_g_0=test_3_probs[3], h_0_given_g1=test_3_probs[4],
+    #                    filename=f[4], threshold=0.0001)
+    #
+    # print(print_str[4])
+    # print(create_prior_prob_df(test_4_probs))
+    # test_4_em_100 = EM(g_0=test_4_probs[0], w_0_given_g_0=test_4_probs[1],
+    #                    w0_given_g0_1=test_4_probs[2], h_0_given_g_0=test_4_probs[3], h_0_given_g1=test_4_probs[4],
+    #                    filename=f[4], threshold=0.0001)
+    #
+    # print(print_str[5])
+    # print(create_prior_prob_df(test_5_probs))
+    # test_5_em_100 = EM(g_0=test_5_probs[0], w_0_given_g_0=test_5_probs[1],
+    #                    w0_given_g0_1=test_5_probs[2], h_0_given_g_0=test_5_probs[3], h_0_given_g1=test_5_probs[4],
+    #                    filename=f[4], threshold=0.0001)
 
 
 if __name__ == '__main__':
